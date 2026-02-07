@@ -1,84 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
-import './Dashboard.css';
+import authService from '../services/authService';
+import './Auth.css';
 
-const Dashboard = () => {
+function Dashboard() {
+  const [user, setUser] = useState(null);
   const navigate = useNavigate();
-  const { user, logout } = useAuth();
 
-  const handleLogout = async () => {
-    try {
-      await logout();
+  useEffect(() => {
+    // Get user from localStorage instead of API call
+    const userData = authService.getCurrentUser();
+    if (!userData) {
       navigate('/login');
-    } catch (error) {
-      console.error('Logout failed:', error);
+    } else {
+      setUser(userData);
     }
+  }, [navigate]);
+
+  const handleLogout = () => {
+    authService.logout();
+    navigate('/login');
   };
 
+  if (!user) {
+    return <div>Loading...</div>;
+  }
+
   return (
-    <div className="dashboard-container">
-      <div className="dashboard-header">
-        <h1>Dashboard</h1>
-        <button onClick={handleLogout} className="btn-logout">
+    <div className="auth-container">
+      <div className="auth-card">
+        <h2>Dashboard</h2>
+        <div className="user-info">
+          <p><strong>Welcome, {user.username}!</strong></p>
+          <p>Helloooo~~.You are successfully logged in.</p>
+        </div>
+        <button onClick={handleLogout} className="btn-primary">
           Logout
         </button>
       </div>
-
-      <div className="profile-card">
-        <div className="profile-header">
-          <div className="profile-avatar">
-            {user?.fullName?.charAt(0).toUpperCase()}
-          </div>
-          <h2>Welcome, {user?.fullName}!</h2>
-        </div>
-
-        <div className="profile-info">
-          <div className="info-item">
-            <label>Full Name:</label>
-            <span>{user?.fullName}</span>
-          </div>
-
-          <div className="info-item">
-            <label>Username:</label>
-            <span>{user?.username}</span>
-          </div>
-
-          <div className="info-item">
-            <label>Email:</label>
-            <span>{user?.email}</span>
-          </div>
-
-          <div className="info-item">
-            <label>User ID:</label>
-            <span>{user?.id}</span>
-          </div>
-        </div>
-
-        <div className="profile-actions">
-          <button className="btn-secondary">Edit Profile</button>
-          <button className="btn-secondary">Change Password</button>
-        </div>
-      </div>
-
-      <div className="dashboard-stats">
-        <div className="stat-card">
-          <h3>Account Status</h3>
-          <p className="status-active">Active</p>
-        </div>
-
-        <div className="stat-card">
-          <h3>Member Since</h3>
-          <p>2024</p>
-        </div>
-
-        <div className="stat-card">
-          <h3>Account Type</h3>
-          <p>Standard User</p>
-        </div>
-      </div>
     </div>
   );
-};
+}
 
 export default Dashboard;

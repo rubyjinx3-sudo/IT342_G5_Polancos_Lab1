@@ -1,56 +1,42 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import authService from '../services/authService';
 import './Auth.css';
 
-const Login = () => {
-  const navigate = useNavigate();
-  const { login } = useAuth();
-  const [formData, setFormData] = useState({
-    email: '',
-    password: '',
-  });
+function Login() {
+  const [username, setUsername] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+  const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-    setLoading(true);
 
     try {
-      await login(formData);
+      console.log('Attempting login with:', { username, password });
+      const response = await authService.login(username, password);
+      console.log('Login response:', response);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
-    } finally {
-      setLoading(false);
+      console.error('Login error:', err);
+      console.error('Error response:', err.response);
+      setError(err.response?.data?.message || err.message || 'Invalid username or password');
     }
   };
 
   return (
     <div className="auth-container">
       <div className="auth-card">
-        <h2>Welcome Back</h2>
+        <h2>Login</h2>
         <form onSubmit={handleSubmit}>
-          {error && <div className="error-message">{error}</div>}
-          
           <div className="form-group">
-            <label>Email</label>
+            <label>Username</label>
             <input
-              type="email"
-              name="email"
-              value={formData.email}
-              onChange={handleChange}
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
               required
-              placeholder="Enter your email"
             />
           </div>
 
@@ -58,25 +44,23 @@ const Login = () => {
             <label>Password</label>
             <input
               type="password"
-              name="password"
-              value={formData.password}
-              onChange={handleChange}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
               required
-              placeholder="Enter your password"
             />
           </div>
 
-          <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Logging in...' : 'Login'}
-          </button>
+          {error && <div className="error-message">{error}</div>}
+
+          <button type="submit" className="btn-primary">Login</button>
         </form>
 
-        <p className="auth-footer">
+        <p className="auth-link">
           Don't have an account? <Link to="/register">Register here</Link>
         </p>
       </div>
     </div>
   );
-};
+}
 
 export default Login;
