@@ -9,7 +9,7 @@ public class User {
     
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private Long userId;
     
     @Column(unique = true, nullable = false)
     private String username;
@@ -20,59 +20,54 @@ public class User {
     @Column(nullable = false)
     private String password;
     
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
     
-    // Constructors
-    public User() {
-        this.createdAt = LocalDateTime.now();
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+    
+    @Column(name = "last_login")
+    private LocalDateTime lastLogin;
+    
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = LocalDateTime.now();
     }
+    
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+    
+    // Constructors
+    public User() {}
     
     public User(String username, String email, String password) {
         this.username = username;
         this.email = email;
         this.password = password;
-        this.createdAt = LocalDateTime.now();
     }
     
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
     
-    public String getUsername() {
-        return username;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
     
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public String getPassword() { return password; }
+    public void setPassword(String password) { this.password = password; }
     
-    public String getEmail() {
-        return email;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
-    public void setEmail(String email) {
-        this.email = email;
-    }
+    public LocalDateTime getUpdatedAt() { return updatedAt; }
+    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
     
-    public String getPassword() {
-        return password;
-    }
-    
-    public void setPassword(String password) {
-        this.password = password;
-    }
-    
-    public LocalDateTime getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(LocalDateTime createdAt) {
-        this.createdAt = createdAt;
-    }
+    public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
 }

@@ -1,52 +1,35 @@
 package com.lab2.authsystem.dto;
 
+import java.time.LocalDateTime;
+
 public class UserResponse {
-    
-    private Long id;
+    private Long userId;
     private String username;
     private String email;
-    private String createdAt;
+    private LocalDateTime createdAt;
+    private LocalDateTime lastLogin;
     
-    // Constructors
-    public UserResponse() {}
-    
-    public UserResponse(Long id, String username, String email, String createdAt) {
-        this.id = id;
+    public UserResponse(Long userId, String username, String email, LocalDateTime createdAt, LocalDateTime lastLogin) {
+        this.userId = userId;
         this.username = username;
         this.email = email;
         this.createdAt = createdAt;
+        this.lastLogin = lastLogin;
     }
     
     // Getters and Setters
-    public Long getId() {
-        return id;
-    }
+    public Long getUserId() { return userId; }
+    public void setUserId(Long userId) { this.userId = userId; }
     
-    public void setId(Long id) {
-        this.id = id;
-    }
+    public String getUsername() { return username; }
+    public void setUsername(String username) { this.username = username; }
     
-    public String getUsername() {
-        return username;
-    }
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
     
-    public void setUsername(String username) {
-        this.username = username;
-    }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     
-    public String getEmail() {
-        return email;
-    }
-    
-    public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    public String getCreatedAt() {
-        return createdAt;
-    }
-    
-    public void setCreatedAt(String createdAt) {
-        this.createdAt = createdAt;
-    }
+    public LocalDateTime getLastLogin() { return lastLogin; }
+    public void setLastLogin(LocalDateTime lastLogin) { this.lastLogin = lastLogin; }
 }
