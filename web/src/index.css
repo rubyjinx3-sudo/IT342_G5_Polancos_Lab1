@@ -1,13 +1,57 @@
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ============================================================
+   GLOBAL STYLES & CSS VARIABLES — Campus Event Tracker
+   Place this in src/index.css  (imported in src/index.js)
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; }
+
+:root {
+  /* ── Brand colours (navy/blue from Figma) ── */
+  --primary:            #1E3A5F;   /* deep navy */
+  --primary-hover:      #162d4a;
+  --secondary:          #2563EB;   /* bright blue */
+  --secondary-hover:    #1d4ed8;
+
+  /* ── Surface colours ── */
+  --background:         #F1F5F9;   /* light grey page bg */
+  --card:               #FFFFFF;
+  --accent:             #F8FAFC;   /* subtle hover / thead bg */
+  --input-background:   #FFFFFF;
+
+  /* ── Text ── */
+  --foreground:         #0F172A;
+  --muted-foreground:   #64748B;
+
+  /* ── Borders & utility ── */
+  --border:             #E2E8F0;
+  --destructive:        #EF4444;
+  --success:            #10B981;
+
+  /* ── Sidebar ── */
+  --sidebar-bg:         #FFFFFF;
+  --sidebar-width:      16rem;
+  --sidebar-active-bg:  #1E3A5F;
+  --sidebar-active-text:#FFFFFF;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+html, body, #root {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-size: 15px;
+  background: var(--background);
+  color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
 }
+
+a { text-decoration: none; color: inherit; }
+button { font-family: inherit; }
+img { display: block; max-width: 100%; }
+
+/* Scrollbar (optional polish) */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
