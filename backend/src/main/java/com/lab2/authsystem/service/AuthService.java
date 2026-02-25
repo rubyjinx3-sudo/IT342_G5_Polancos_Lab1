@@ -12,66 +12,101 @@ import java.util.Optional;
 
 @Service
 public class AuthService {
-    
+
     @Autowired
     private UserRepository userRepository;
-    
+
     private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-    
+
+    // ── REGISTER ──────────────────────────────────────────
     public AuthResponse register(RegisterRequest request) {
-        // Check if username already exists
-        if (userRepository.existsByUsername(request.getUsername())) {
-            throw new RuntimeException("Username already exists");
-        }
-        
-        // Check if email already exists
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
         }
-        
-        // Create new user
+
         User user = new User();
-        user.setUsername(request.getUsername());
+        user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        
+
+        try {
+            user.setRole(User.Role.valueOf(request.getRole().toUpperCase()));
+        } catch (Exception e) {
+            user.setRole(User.Role.STUDENT);
+        }
+
         userRepository.save(user);
-        
-        return new AuthResponse("User registered successfully", user.getUsername(), user.getEmail());
+
+        return new AuthResponse(
+            "Registration successful",
+            user.getFullName(),
+            user.getEmail(),
+            user.getRole().name(),
+            user.getUserId()
+        );
     }
-    
+
+    // ── LOGIN ─────────────────────────────────────────────
     public AuthResponse login(LoginRequest request) {
-        // Find user by username
-        Optional<User> userOptional = userRepository.findByUsername(request.getUsername());
-        
-        if (userOptional.isEmpty()) {
-            throw new RuntimeException("Invalid username or password");
+        Optional<User> optUser = userRepository.findByEmail(request.getEmail());
+
+        if (optUser.isEmpty()) {
+            throw new RuntimeException("Invalid email or password");
         }
-        
-        User user = userOptional.get();
-        
-        // Verify password
+
+        User user = optUser.get();
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid username or password");
+            throw new RuntimeException("Invalid email or password");
         }
-        
-        // Update last login
+
         user.setLastLogin(LocalDateTime.now());
         userRepository.save(user);
-        
-        return new AuthResponse("Login successful", user.getUsername(), user.getEmail());
+
+        return new AuthResponse(
+            "Login successful",
+            user.getFullName(),
+            user.getEmail(),
+            user.getRole().name(),
+            user.getUserId()
+        );
     }
-    
-    public UserResponse getUserByUsername(String username) {
-        User user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("User not found"));
-        
+
+    // ── GET USER BY EMAIL ─────────────────────────────────
+    public UserResponse getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
         return new UserResponse(
             user.getUserId(),
-            user.getUsername(),
+            user.getFullName(),
             user.getEmail(),
+            user.getRole().name(),
             user.getCreatedAt(),
             user.getLastLogin()
         );
+    }
+
+    // ── UPDATE PROFILE ────────────────────────────────────
+    public void updateProfile(Long userId, String fullName,
+                              String currentPassword, String newPassword) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        // Update full name
+        if (fullName != null && !fullName.isBlank()) {
+            user.setFullName(fullName);
+        }
+
+        // Change password if provided
+        if (newPassword != null && !newPassword.isBlank()) {
+            if (currentPassword == null ||
+                !passwordEncoder.matches(currentPassword, user.getPassword())) {
+                throw new RuntimeException("Current password is incorrect");
+            }
+            user.setPassword(passwordEncoder.encode(newPassword));
+        }
+
+        userRepository.save(user);
     }
 }
