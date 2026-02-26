@@ -1,67 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:gravity="center"
-    android:background="@drawable/gradient_background"
-    android:padding="24dp">
+    android:background="#F1F5F9">
 
-    <!-- White Card -->
+    <!-- Top navbar -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:orientation="horizontal"
+        android:background="#1E3A5F"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="📅 Campus Events"
+            android:textColor="#FFFFFF"
+            android:textSize="17sp"
+            android:textStyle="bold"/>
+
+        <Button
+            android:id="@+id/btnLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Logout"
+            android:textColor="#FFFFFF"
+            android:textSize="13sp"
+            android:backgroundTint="#2563EB"/>
+    </LinearLayout>
+
+    <!-- Welcome header -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="@drawable/card_background"
-        android:padding="32dp"
-        android:elevation="8dp"
-        android:gravity="center">
+        android:background="#FFFFFF"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        android:elevation="2dp">
 
-        <!-- Dashboard Title -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Dashboard"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="#212121"
-            android:gravity="center"
-            android:layout_marginBottom="24dp"/>
-
-        <!-- Welcome Message -->
         <TextView
             android:id="@+id/tvWelcome"
-            android:layout_width="match_parent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Welcome!"
-            android:textSize="18sp"
+            android:textSize="20sp"
             android:textStyle="bold"
-            android:textColor="#212121"
-            android:gravity="center"
-            android:layout_marginBottom="8dp"/>
+            android:textColor="#0F172A"/>
 
-        <!-- Logged In Message -->
         <TextView
-            android:layout_width="match_parent"
+            android:id="@+id/tvRole"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="You are successfully logged in."
-            android:textSize="14sp"
-            android:textColor="#666666"
-            android:gravity="center"
-            android:layout_marginBottom="32dp"/>
-
-        <!-- Logout Button -->
-        <Button
-            android:id="@+id/btnLogout"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
-            android:text="Logout"
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:background="@drawable/button_gradient"/>
-
+            android:text="Student"
+            android:textSize="13sp"
+            android:textColor="#64748B"/>
     </LinearLayout>
 
+    <!-- Content area -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Upcoming Events"
+            android:textSize="17sp"
+            android:textStyle="bold"
+            android:textColor="#0F172A"
+            android:layout_marginBottom="12dp"/>
+
+        <!-- Loading -->
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:visibility="gone"/>
+
+        <!-- Empty state -->
+        <TextView
+            android:id="@+id/tvNoEvents"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="No events found."
+            android:textColor="#64748B"
+            android:textSize="14sp"
+            android:gravity="center"
+            android:paddingTop="40dp"
+            android:visibility="gone"/>
+
+        <!-- Events list -->
+        <ListView
+            android:id="@+id/listEvents"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:divider="#E2E8F0"
+            android:dividerHeight="1dp"/>
+
+    </LinearLayout>
 </LinearLayout>
