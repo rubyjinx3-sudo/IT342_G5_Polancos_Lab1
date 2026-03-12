@@ -1,5 +1,6 @@
 package com.lab2.authsystem.service;
 
+import org.springframework.transaction.annotation.Transactional;
 import com.lab2.authsystem.model.Event;
 import com.lab2.authsystem.model.Registration;
 import com.lab2.authsystem.model.User;
@@ -74,5 +75,14 @@ public class EventService {
 
     public boolean isRegistered(Long userId, Long eventId) {
         return registrationRepository.existsByUserIdAndEventId(userId, eventId);
+    }
+
+    // ── CANCEL REGISTRATION (Only ONE method!) ───────────
+    @Transactional
+    public void cancelRegistration(Long userId, Long eventId) {
+        if (!registrationRepository.existsByUserIdAndEventId(userId, eventId)) {
+            throw new RuntimeException("Registration not found");
+        }
+        registrationRepository.deleteByUserIdAndEventId(userId, eventId);
     }
 }

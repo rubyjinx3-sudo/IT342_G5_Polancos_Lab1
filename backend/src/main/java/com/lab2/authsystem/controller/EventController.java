@@ -82,4 +82,17 @@ public class EventController {
         boolean registered = eventService.isRegistered(userId, eventId);
         return ResponseEntity.ok(registered);
     }
+
+    // ── DELETE cancel registration ─────────────────────────
+@DeleteMapping("/registrations")
+public ResponseEntity<?> cancelRegistration(
+        @RequestParam Long userId,
+        @RequestParam Long eventId) {
+    try {
+        eventService.cancelRegistration(userId, eventId);
+        return ResponseEntity.ok("Registration cancelled");
+    } catch (RuntimeException e) {
+        return ResponseEntity.badRequest().body(e.getMessage());
+    }
+}
 }
