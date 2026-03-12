@@ -140,17 +140,7 @@ export const RegisterPage = () => {
             />
           </div>
 
-          <div className="form-group">
-            <label htmlFor="role" className="form-label">Role</label>
-            <select
-              id="role" className="form-input form-select"
-              value={formData.role} onChange={handleRoleChange}
-              disabled={loading}
-            >
-              <option value="STUDENT">Student</option>
-              <option value="ORGANIZER">Organizer</option>
-            </select>
-          </div>
+        
 
           {formData.role === 'STUDENT' && (
             <>

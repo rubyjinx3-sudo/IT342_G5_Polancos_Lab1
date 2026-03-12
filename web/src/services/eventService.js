@@ -117,6 +117,13 @@ const eventService = {
     return res.data; // boolean
   },
 
+
+    // Cancel registration for current user   ← ADD THIS
+  cancelRegistration: async (eventId) => {
+    const user = getUser();
+    const res = await api.delete(`/registrations?userId=${user.userId}&eventId=${eventId}`);
+    return res.data;
+  },
   // ── Client-side filter & sort helpers ─────────────────
 
   filterEvents: (events, { search = '', category = 'all', dateFrom, dateTo } = {}) => {

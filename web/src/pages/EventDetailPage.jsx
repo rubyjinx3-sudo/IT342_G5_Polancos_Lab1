@@ -50,18 +50,40 @@ const EventDetailPage = () => {
   };
 
   const handleRegister = async () => {
-    if (!user) { navigate('/'); return; }
-    setRegError('');
-    setRegistering(true);
-    try {
-      await eventService.registerForEvent(eventId);
-      setIsRegistered(true);
-    } catch (err) {
-      setRegError(err.response?.data || err.message || 'Registration failed.');
-    } finally {
-      setRegistering(false);
-    }
-  };
+  if (!user) { navigate('/'); return; }
+  setRegError('');
+  setRegistering(true);
+  try {
+    await eventService.registerForEvent(eventId);
+    setIsRegistered(true);
+  } catch (err) {
+    const msg = err.response?.data?.message 
+      || err.response?.data 
+      || err.message 
+      || 'Registration failed.';
+    setRegError(typeof msg === 'object' ? JSON.stringify(msg) : msg);
+  } finally {
+    setRegistering(false);
+  }
+};
+
+const handleCancel = async () => {
+  if (!user) return;
+  setRegError('');
+  setRegistering(true);
+  try {
+    await eventService.cancelRegistration(eventId);
+    setIsRegistered(false);
+  } catch (err) {
+    const msg = err.response?.data?.message 
+      || err.response?.data 
+      || err.message 
+      || 'Cancellation failed.';
+    setRegError(typeof msg === 'object' ? JSON.stringify(msg) : msg);
+  } finally {
+    setRegistering(false);
+  }
+};
 
   if (loading) return (
     <div className="page-loading">
@@ -132,28 +154,36 @@ const EventDetailPage = () => {
           )}
 
           {/* Register / Already registered */}
-          <div className="detail-action">
-            {regError && (
-              <div className="reg-error">
-                <AlertCircle size={15} />
-                <span>{regError}</span>
-              </div>
-            )}
-            {isRegistered ? (
-              <div className="registered-box">
-                <CheckCircle size={20} className="check-icon" />
-                <span>You're registered for this event!</span>
-              </div>
-            ) : (
-              <button
-                className="register-btn"
-                onClick={handleRegister}
-                disabled={registering}
-              >
-                {registering ? 'Registering...' : 'Register for Event'}
-              </button>
-            )}
-          </div>
+{/* Register / Cancel */}
+<div className="detail-action">
+  {regError && (
+    <div className="reg-error">
+      <AlertCircle size={15} />
+      <span>{typeof regError === 'object' ? regError.message || 'An error occurred.' : regError}</span>
+    </div>
+  )}
+  {isRegistered ? (
+    <div className="registered-box">
+      <CheckCircle size={20} className="check-icon" />
+      <span>You're registered for this event!</span>
+      <button
+        className="cancel-btn"
+        onClick={handleCancel}
+        disabled={registering}
+      >
+        {registering ? 'Cancelling...' : 'Cancel Registration'}
+      </button>
+    </div>
+  ) : (
+    <button
+      className="register-btn"
+      onClick={handleRegister}
+      disabled={registering}
+    >
+      {registering ? 'Registering...' : 'Register for Event'}
+    </button>
+  )}
+</div>
         </div>
       </div>
     </div>

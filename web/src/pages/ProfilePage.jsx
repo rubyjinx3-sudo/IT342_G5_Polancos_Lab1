@@ -173,25 +173,7 @@ const ProfilePage = () => {
               </div>
             </div>
 
-            <div className="form-section">
-              <h4 className="form-section-title">Change Password</h4>
-              <p className="section-hint">Leave blank to keep your current password.</p>
-              <div className="form-group">
-                <label className="form-label">Current Password</label>
-                <input type="password" className="form-input" placeholder="Enter current password"
-                  value={currentPw} onChange={(e) => setCurrentPw(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">New Password</label>
-                <input type="password" className="form-input" placeholder="Enter new password"
-                  value={newPw} onChange={(e) => setNewPw(e.target.value)} />
-              </div>
-              <div className="form-group">
-                <label className="form-label">Confirm New Password</label>
-                <input type="password" className="form-input" placeholder="Confirm new password"
-                  value={confirmPw} onChange={(e) => setConfirmPw(e.target.value)} />
-              </div>
-            </div>
+          
 
             <button type="submit" className="save-btn" disabled={saving}>
               {saving ? 'Saving...' : 'Save Changes'}
