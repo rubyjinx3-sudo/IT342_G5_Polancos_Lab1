@@ -5,11 +5,7 @@ plugins {
 
 android {
     namespace = "com.example.campuseventtracker"
-    compileSdk {
-        version = release(35) {
-
-        }
-    }
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.example.campuseventtracker"
