@@ -3,71 +3,88 @@ package com.example.campuseventtracker
 import android.app.Activity
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.HideReturnsTransformationMethod
+import android.text.method.PasswordTransformationMethod
 import android.view.View
-import android.widget.*
-import kotlinx.coroutines.*
+import android.view.MotionEvent
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ArrayAdapter
+import android.widget.Spinner
+import android.widget.TextView
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
 class RegisterActivity : Activity() {
 
-    private val BASE_URL = "http://192.168.254.103:8080/api"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_register)
 
         val etFullName = findViewById<EditText>(R.id.etFullName)
-        val etEmail    = findViewById<EditText>(R.id.etEmail)
+        val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
         val etConfirmPassword = findViewById<EditText>(R.id.etConfirmPassword)
-        val spinnerRole   = findViewById<Spinner>(R.id.spinnerRole)
-        val btnRegister   = findViewById<Button>(R.id.btnRegister)
-        val tvError       = findViewById<TextView>(R.id.tvError)
-        val tvSuccess     = findViewById<TextView>(R.id.tvSuccess)
-        val tvLoginLink   = findViewById<TextView>(R.id.tvLoginLink)
+        val spinnerYear = findViewById<Spinner>(R.id.spinnerYear)
+        val btnRegister = findViewById<Button>(R.id.btnRegister)
+        val tvError = findViewById<TextView>(R.id.tvError)
+        val tvSuccess = findViewById<TextView>(R.id.tvSuccess)
+        val tvLoginLink = findViewById<TextView>(R.id.tvLoginLink)
 
-        // Role spinner options — must match backend enum: STUDENT, ORGANIZER
-        val roles = listOf("STUDENT", "ORGANIZER")
-        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, roles)
+        val years = listOf(
+            getString(R.string.hint_select_year),
+            getString(R.string.year_freshman),
+            getString(R.string.year_sophomore),
+            getString(R.string.year_junior),
+            getString(R.string.year_senior),
+            getString(R.string.year_graduate)
+        )
+        val adapter = ArrayAdapter(this, android.R.layout.simple_spinner_item, years)
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerRole.adapter = adapter
+        spinnerYear.adapter = adapter
+
+        configurePasswordToggle(etPassword)
+        configurePasswordToggle(etConfirmPassword)
 
         btnRegister.setOnClickListener {
-            val fullName        = etFullName.text.toString().trim()
-            val email           = etEmail.text.toString().trim()
-            val password        = etPassword.text.toString().trim()
+            val fullName = etFullName.text.toString().trim()
+            val email = etEmail.text.toString().trim()
+            val password = etPassword.text.toString().trim()
             val confirmPassword = etConfirmPassword.text.toString().trim()
-            val role            = spinnerRole.selectedItem.toString()
+            val role = "STUDENT"
 
-            // Validation
             when {
                 fullName.isEmpty() || email.isEmpty() || password.isEmpty() -> {
-                    showError(tvError, tvSuccess, "Please fill in all required fields")
+                    showError(tvError, tvSuccess, getString(R.string.error_fill_required_fields))
                     return@setOnClickListener
                 }
                 fullName.length < 2 -> {
-                    showError(tvError, tvSuccess, "Full name must be at least 2 characters")
+                    showError(tvError, tvSuccess, getString(R.string.error_name_min_length))
                     return@setOnClickListener
                 }
                 !email.contains("@") -> {
-                    showError(tvError, tvSuccess, "Please enter a valid email")
+                    showError(tvError, tvSuccess, getString(R.string.error_valid_email))
                     return@setOnClickListener
                 }
                 password.length < 6 -> {
-                    showError(tvError, tvSuccess, "Password must be at least 6 characters")
+                    showError(tvError, tvSuccess, getString(R.string.error_password_min_length))
                     return@setOnClickListener
                 }
                 password != confirmPassword -> {
-                    showError(tvError, tvSuccess, "Passwords do not match")
+                    showError(tvError, tvSuccess, getString(R.string.error_password_mismatch))
                     return@setOnClickListener
                 }
             }
 
             tvError.visibility = View.GONE
             btnRegister.isEnabled = false
-            btnRegister.text = "Creating account..."
+            btnRegister.text = getString(R.string.button_creating_account)
 
             register(fullName, email, password, role, tvError, tvSuccess, btnRegister)
         }
@@ -89,36 +106,37 @@ class RegisterActivity : Activity() {
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("$BASE_URL/auth/register")
+                val url = URL("${AppConfig.BASE_URL}/auth/register")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json")
                 conn.connectTimeout = 8000
-                conn.readTimeout    = 8000
+                conn.readTimeout = 8000
                 conn.doOutput = true
 
-                // Backend RegisterRequest expects: { fullName, email, password, role }
-                val body = JSONObject()
-                body.put("fullName", fullName)
-                body.put("email",    email)
-                body.put("password", password)
-                body.put("role",     role)   // "STUDENT" or "ORGANIZER"
+                val body = JSONObject().apply {
+                    put("fullName", fullName)
+                    put("email", email)
+                    put("password", password)
+                    put("role", role)
+                }
                 conn.outputStream.write(body.toString().toByteArray())
 
-                val code         = conn.responseCode
-                val responseBody = if (code == 200)
+                val code = conn.responseCode
+                val responseBody = if (code == 200) {
                     conn.inputStream.bufferedReader().readText()
-                else
+                } else {
                     conn.errorStream?.bufferedReader()?.readText() ?: ""
+                }
 
                 conn.disconnect()
 
                 withContext(Dispatchers.Main) {
                     btnRegister.isEnabled = true
-                    btnRegister.text = "Create Account"
+                    btnRegister.text = getString(R.string.button_create_account)
 
                     if (code == 200) {
-                        tvSuccess.text = "Account created! Redirecting to login..."
+                        tvSuccess.text = getString(R.string.success_account_created)
                         tvSuccess.visibility = View.VISIBLE
                         tvError.visibility = View.GONE
 
@@ -128,18 +146,19 @@ class RegisterActivity : Activity() {
                             finish()
                         }
                     } else {
-                        // Extract error message from plain string or JSON
                         val msg = try {
                             JSONObject(responseBody).optString("message", responseBody)
-                        } catch (e: Exception) { responseBody }
-                        showError(tvError, tvSuccess, msg.ifEmpty { "Registration failed. Email may already exist." })
+                        } catch (_: Exception) {
+                            responseBody
+                        }
+                        showError(tvError, tvSuccess, msg.ifEmpty { getString(R.string.error_connection_failed) })
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
                     btnRegister.isEnabled = true
-                    btnRegister.text = "Create Account"
-                    showError(tvError, tvSuccess, "Connection failed. Is the server running?")
+                    btnRegister.text = getString(R.string.button_create_account)
+                    showError(tvError, tvSuccess, getString(R.string.error_connection_failed))
                 }
             }
         }
@@ -149,5 +168,24 @@ class RegisterActivity : Activity() {
         tvError.text = msg
         tvError.visibility = View.VISIBLE
         tvSuccess.visibility = View.GONE
+    }
+
+    private fun configurePasswordToggle(field: EditText) {
+        field.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawable = field.compoundDrawablesRelative[2] ?: return@setOnTouchListener false
+                if (event.rawX >= field.right - drawable.bounds.width() - field.paddingEnd) {
+                    val isVisible = field.transformationMethod !is PasswordTransformationMethod
+                    field.transformationMethod = if (isVisible) {
+                        PasswordTransformationMethod.getInstance()
+                    } else {
+                        HideReturnsTransformationMethod.getInstance()
+                    }
+                    field.setSelection(field.text.length)
+                    return@setOnTouchListener true
+                }
+            }
+            false
+        }
     }
 }

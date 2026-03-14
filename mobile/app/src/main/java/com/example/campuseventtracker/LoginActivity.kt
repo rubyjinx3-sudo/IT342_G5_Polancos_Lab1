@@ -4,50 +4,53 @@ import android.app.Activity
 import android.content.Intent
 import android.content.SharedPreferences
 import android.os.Bundle
+import android.text.method.HideReturnsTransformationMethod
+import android.text.method.PasswordTransformationMethod
 import android.view.View
+import android.view.MotionEvent
 import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
-import kotlinx.coroutines.*
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.json.JSONObject
 import java.net.HttpURLConnection
 import java.net.URL
 
 class LoginActivity : Activity() {
 
-    // ⚠️ Use your computer's local IP (not localhost) for physical device
-    // For emulator use: 10.0.2.2
-    private val BASE_URL = "http://192.168.254.103:8080/api"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_login)
 
-        val etEmail    = findViewById<EditText>(R.id.etEmail)
+        val etEmail = findViewById<EditText>(R.id.etEmail)
         val etPassword = findViewById<EditText>(R.id.etPassword)
-        val btnLogin   = findViewById<Button>(R.id.btnLogin)
-        val tvError    = findViewById<TextView>(R.id.tvError)
+        val btnLogin = findViewById<Button>(R.id.btnLogin)
+        val tvError = findViewById<TextView>(R.id.tvError)
         val tvRegisterLink = findViewById<TextView>(R.id.tvRegisterLink)
 
-        // Already logged in → skip to dashboard
-        val sharedPref = getSharedPreferences("ced_user", MODE_PRIVATE)
+        val sharedPref = getSharedPreferences(AppConfig.USER_PREFS, MODE_PRIVATE)
         if (sharedPref.getString("email", null) != null) {
             goToDashboard()
             return
         }
 
+        configurePasswordToggle(etPassword)
+
         btnLogin.setOnClickListener {
-            val email    = etEmail.text.toString().trim()
+            val email = etEmail.text.toString().trim()
             val password = etPassword.text.toString().trim()
 
             if (email.isEmpty() || password.isEmpty()) {
-                showError(tvError, "Please fill in all fields")
+                showError(tvError, getString(R.string.error_fill_all_fields))
                 return@setOnClickListener
             }
 
             tvError.visibility = View.GONE
             btnLogin.isEnabled = false
-            btnLogin.text = "Signing in..."
+            btnLogin.text = getString(R.string.button_signing_in)
 
             login(email, password, tvError, btnLogin, sharedPref)
         }
@@ -66,55 +69,56 @@ class LoginActivity : Activity() {
     ) {
         CoroutineScope(Dispatchers.IO).launch {
             try {
-                val url = URL("$BASE_URL/auth/login")
+                val url = URL("${AppConfig.BASE_URL}/auth/login")
                 val conn = url.openConnection() as HttpURLConnection
                 conn.requestMethod = "POST"
                 conn.setRequestProperty("Content-Type", "application/json")
                 conn.connectTimeout = 8000
-                conn.readTimeout    = 8000
+                conn.readTimeout = 8000
                 conn.doOutput = true
 
-                // Backend LoginRequest expects: { email, password }
-                val body = JSONObject()
-                body.put("email", email)
-                body.put("password", password)
+                val body = JSONObject().apply {
+                    put("email", email)
+                    put("password", password)
+                }
                 conn.outputStream.write(body.toString().toByteArray())
 
-                val code         = conn.responseCode
-                val responseBody = if (code == 200)
+                val code = conn.responseCode
+                val responseBody = if (code == 200) {
                     conn.inputStream.bufferedReader().readText()
-                else
+                } else {
                     conn.errorStream?.bufferedReader()?.readText() ?: ""
+                }
 
                 conn.disconnect()
 
                 withContext(Dispatchers.Main) {
                     btnLogin.isEnabled = true
-                    btnLogin.text = "Login"
+                    btnLogin.text = getString(R.string.button_login)
 
                     if (code == 200) {
-                        // Parse AuthResponse: { message, fullName, email, role, userId }
                         val json = JSONObject(responseBody)
                         sharedPref.edit()
-                            .putString("email",    json.optString("email"))
+                            .putString("email", json.optString("email"))
                             .putString("fullName", json.optString("fullName"))
-                            .putString("role",     json.optString("role"))
-                            .putLong("userId",     json.optLong("userId"))
+                            .putString("role", json.optString("role"))
+                            .putLong("userId", json.optLong("userId"))
                             .apply()
                         goToDashboard()
                     } else {
-                        // Backend returns plain string on error
                         val msg = try {
                             JSONObject(responseBody).optString("message", responseBody)
-                        } catch (e: Exception) { responseBody }
-                        showError(tvError, msg.ifEmpty { "Invalid email or password" })
+                        } catch (_: Exception) {
+                            responseBody
+                        }
+                        showError(tvError, msg.ifEmpty { getString(R.string.error_invalid_email_password) })
                     }
                 }
-            } catch (e: Exception) {
+            } catch (_: Exception) {
                 withContext(Dispatchers.Main) {
                     btnLogin.isEnabled = true
-                    btnLogin.text = "Login"
-                    showError(tvError, "Connection failed. Is the server running?")
+                    btnLogin.text = getString(R.string.button_login)
+                    showError(tvError, getString(R.string.error_connection_failed))
                 }
             }
         }
@@ -123,6 +127,25 @@ class LoginActivity : Activity() {
     private fun showError(tv: TextView, msg: String) {
         tv.text = msg
         tv.visibility = View.VISIBLE
+    }
+
+    private fun configurePasswordToggle(field: EditText) {
+        field.setOnTouchListener { _, event ->
+            if (event.action == MotionEvent.ACTION_UP) {
+                val drawable = field.compoundDrawablesRelative[2] ?: return@setOnTouchListener false
+                if (event.rawX >= field.right - drawable.bounds.width() - field.paddingEnd) {
+                    val isVisible = field.transformationMethod !is PasswordTransformationMethod
+                    field.transformationMethod = if (isVisible) {
+                        PasswordTransformationMethod.getInstance()
+                    } else {
+                        HideReturnsTransformationMethod.getInstance()
+                    }
+                    field.setSelection(field.text.length)
+                    return@setOnTouchListener true
+                }
+            }
+            false
+        }
     }
 
     private fun goToDashboard() {

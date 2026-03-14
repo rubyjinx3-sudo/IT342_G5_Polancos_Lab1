@@ -2,7 +2,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
-    <!-- ✅ ADD THIS - Required for API calls -->
     <uses-permission android:name="android.permission.INTERNET"/>
 
     <application
@@ -15,8 +14,10 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.CampusEventTracker"
         android:usesCleartextTraffic="true">
-        <!-- ✅ ADD usesCleartextTraffic above - allows HTTP (not just HTTPS) -->
 
+        <activity
+            android:name=".ProfileActivity"
+            android:exported="false" />
         <activity
             android:name=".DashboardActivity"
             android:exported="false" />

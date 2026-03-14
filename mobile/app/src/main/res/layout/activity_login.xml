@@ -2,43 +2,51 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F1F5F9">
+    android:background="@color/app_background"
+    android:fillViewport="true">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="match_parent"
         android:orientation="vertical"
-        android:gravity="center"
-        android:padding="24dp"
-        android:minHeight="600dp">
+        android:gravity="center_horizontal"
+        android:padding="20dp">
 
-        <!-- Logo -->
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="📅"
-            android:textSize="48sp"
-            android:layout_marginBottom="8dp"/>
+            android:background="@drawable/gradient_background"
+            android:gravity="center_horizontal"
+            android:orientation="vertical"
+            android:padding="24dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="20dp">
 
-        <!-- Title -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Campus Event Tracker"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#0F172A"
-            android:layout_marginBottom="4dp"/>
+            <ImageView
+                android:layout_width="96dp"
+                android:layout_height="96dp"
+                android:layout_marginBottom="14dp"
+                android:contentDescription="@string/app_name"
+                android:src="@drawable/ic_campus_logo" />
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Sign in to your account"
-            android:textSize="14sp"
-            android:textColor="#64748B"
-            android:layout_marginBottom="32dp"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/auth_hero_title"
+                android:textSize="26sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"/>
 
-        <!-- Card -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="@string/auth_hero_login_copy"
+                android:textSize="14sp"
+                android:lineSpacingExtra="2dp"
+                android:textColor="#DCECF4"/>
+        </LinearLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -46,84 +54,110 @@
             android:background="@drawable/card_background"
             android:padding="24dp">
 
-            <!-- Error box -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login_heading"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:textColor="@color/app_text"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/login_subtitle"
+                android:textSize="14sp"
+                android:textColor="@color/app_muted"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="24dp"/>
+
             <TextView
                 android:id="@+id/tvError"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="#FEE2E2"
-                android:textColor="#EF4444"
+                android:background="@color/app_error_bg"
+                android:textColor="@color/app_error_text"
                 android:padding="12dp"
                 android:textSize="13sp"
                 android:visibility="gone"
                 android:layout_marginBottom="12dp"/>
 
-            <!-- Email -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Email"
+                android:text="@string/label_email"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#0F172A"
+                android:textColor="@color/app_text"
                 android:layout_marginBottom="4dp"/>
 
             <EditText
                 android:id="@+id/etEmail"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="Enter your email"
+                android:layout_height="52dp"
+                android:hint="@string/hint_email"
                 android:inputType="textEmailAddress"
                 android:background="@drawable/input_background"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
                 android:textSize="14sp"
+                android:textColor="@color/app_text"
+                android:textColorHint="@color/app_muted"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- Password -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Password"
+                android:text="@string/label_password"
                 android:textSize="14sp"
                 android:textStyle="bold"
-                android:textColor="#0F172A"
+                android:textColor="@color/app_text"
                 android:layout_marginBottom="4dp"/>
 
             <EditText
                 android:id="@+id/etPassword"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:hint="Enter your password"
+                android:layout_height="52dp"
+                android:hint="@string/hint_password"
                 android:inputType="textPassword"
                 android:background="@drawable/input_background"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
+                android:paddingStart="16dp"
+                android:paddingEnd="50dp"
                 android:textSize="14sp"
-                android:layout_marginBottom="20dp"/>
+                android:textColor="@color/app_text"
+                android:textColorHint="@color/app_muted"
+                android:layout_marginBottom="20dp"
+                android:drawableEnd="@android:drawable/ic_menu_view"
+                android:drawablePadding="12dp" />
 
-            <!-- Login button -->
             <Button
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
-                android:layout_height="48dp"
-                android:text="Login"
+                android:layout_height="52dp"
+                android:text="@string/button_login"
                 android:textColor="#FFFFFF"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:backgroundTint="#2563EB"
+                android:backgroundTint="@color/app_primary"
                 android:layout_marginBottom="16dp"/>
 
-            <!-- Register link -->
             <TextView
                 android:id="@+id/tvRegisterLink"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:text="Don't have an account? Register"
+                android:text="@string/link_register"
                 android:textSize="14sp"
-                android:textColor="#64748B"/>
+                android:textColor="@color/app_muted"/>
 
         </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/auth_footer_copy"
+            android:textSize="12sp"
+            android:textColor="@color/app_muted"/>
     </LinearLayout>
 </ScrollView>
