@@ -1,10 +1,13 @@
 package com.lab2.authsystem.service;
 
-import com.lab2.authsystem.dto.*;
+import com.lab2.authsystem.dto.AuthResponse;
+import com.lab2.authsystem.dto.LoginRequest;
+import com.lab2.authsystem.dto.RegisterRequest;
+import com.lab2.authsystem.dto.UserResponse;
 import com.lab2.authsystem.model.User;
 import com.lab2.authsystem.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -16,9 +19,9 @@ public class AuthService {
     @Autowired
     private UserRepository userRepository;
 
-    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
-    // ── REGISTER ──────────────────────────────────────────
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new RuntimeException("Email already exists");
@@ -46,7 +49,6 @@ public class AuthService {
         );
     }
 
-    // ── LOGIN ─────────────────────────────────────────────
     public AuthResponse login(LoginRequest request) {
         Optional<User> optUser = userRepository.findByEmail(request.getEmail());
 
@@ -72,7 +74,6 @@ public class AuthService {
         );
     }
 
-    // ── GET USER BY EMAIL ─────────────────────────────────
     public UserResponse getUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
             .orElseThrow(() -> new RuntimeException("User not found"));
@@ -87,18 +88,15 @@ public class AuthService {
         );
     }
 
-    // ── UPDATE PROFILE ────────────────────────────────────
     public void updateProfile(Long userId, String fullName,
                               String currentPassword, String newPassword) {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new RuntimeException("User not found"));
 
-        // Update full name
         if (fullName != null && !fullName.isBlank()) {
             user.setFullName(fullName);
         }
 
-        // Change password if provided
         if (newPassword != null && !newPassword.isBlank()) {
             if (currentPassword == null ||
                 !passwordEncoder.matches(currentPassword, user.getPassword())) {
