@@ -1,18 +1,10 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { APP_NAME } from '../config/appConfig';
+import logo from '../assets/campus-logo.svg';
 import './RegisterPage.css';
 
-// ── Inline SVG icons ──────────────────────
-const CalendarDays = () => (
-  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
-    fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-    <rect width="18" height="18" x="3" y="4" rx="2" ry="2"/>
-    <line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/>
-    <line x1="3" x2="21" y1="10" y2="10"/>
-    <path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01M16 18h.01"/>
-  </svg>
-);
 const AlertCircle = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -22,7 +14,25 @@ const AlertCircle = () => (
     <line x1="12" x2="12.01" y1="16" y2="16"/>
   </svg>
 );
-// ─────────────────────────────────────────
+
+const EyeIcon = ({ open }) => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24"
+    fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    {open ? (
+      <>
+        <path d="M2.06 12.35a1 1 0 0 1 0-.7C3.9 7.18 7.6 4 12 4s8.1 3.18 9.94 7.65a1 1 0 0 1 0 .7C20.1 16.82 16.4 20 12 20S3.9 16.82 2.06 12.35Z" />
+        <circle cx="12" cy="12" r="3" />
+      </>
+    ) : (
+      <>
+        <path d="m3 3 18 18" />
+        <path d="M10.58 10.58a2 2 0 0 0 2.83 2.83" />
+        <path d="M9.88 5.09A9.77 9.77 0 0 1 12 4c4.4 0 8.1 3.18 9.94 7.65a1 1 0 0 1 0 .7 10.45 10.45 0 0 1-4.24 5.1" />
+        <path d="M6.61 6.61A10.45 10.45 0 0 0 2.06 11.65a1 1 0 0 0 0 .7C3.9 16.82 7.6 20 12 20a9.77 9.77 0 0 0 5.39-1.61" />
+      </>
+    )}
+  </svg>
+);
 
 export const RegisterPage = () => {
   const navigate = useNavigate();
@@ -37,15 +47,13 @@ export const RegisterPage = () => {
     department: '',
     year: '',
   });
-  const [error,   setError]   = useState('');
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-  };
-
-  const handleRoleChange = (e) => {
-    setFormData({ ...formData, role: e.target.value });
   };
 
   const handleYearChange = (e) => {
@@ -78,20 +86,28 @@ export const RegisterPage = () => {
 
   return (
     <div className="register-container">
-      <div className="register-card">
+      <div className="register-showcase">
+        <div className="register-pill">New account</div>
+        <div className="register-brand-block">
+          <img src={logo} alt={`${APP_NAME} logo`} className="register-logo-image" />
+          <div>
+            <h2 className="register-showcase-title">{APP_NAME}</h2>
+            <p className="register-showcase-copy">
+              Join the campus event platform with a cleaner onboarding flow and a branded first impression.
+            </p>
+          </div>
+        </div>
+      </div>
 
-        {/* Header */}
+      <div className="register-card">
         <div className="register-header">
           <div className="register-logo">
-            <div className="logo-icon">
-              <CalendarDays />
-            </div>
+            <img src={logo} alt={`${APP_NAME} logo`} className="register-header-logo" />
           </div>
           <h1 className="register-title">Create Account</h1>
           <p className="register-subtitle">Fill in the details to get started</p>
         </div>
 
-        {/* Form */}
         <form onSubmit={handleSubmit} className="register-form">
           {error && (
             <div className="error-message">
@@ -100,58 +116,104 @@ export const RegisterPage = () => {
             </div>
           )}
 
-          <div className="form-group">
-            <label htmlFor="fullName" className="form-label">Full Name</label>
-            <input
-              id="fullName" name="fullName" type="text"
-              className="form-input" placeholder="Enter your full name"
-              value={formData.fullName} onChange={handleChange}
-              required disabled={loading}
-            />
+          <div className="register-grid">
+            <div className="form-group">
+              <label htmlFor="fullName" className="form-label">Full Name</label>
+              <input
+                id="fullName"
+                name="fullName"
+                type="text"
+                className="form-input"
+                placeholder="Enter your full name"
+                value={formData.fullName}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="email" className="form-label">Email</label>
+              <input
+                id="email"
+                name="email"
+                type="email"
+                className="form-input"
+                placeholder="Enter your email"
+                value={formData.email}
+                onChange={handleChange}
+                required
+                disabled={loading}
+              />
+            </div>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">Email</label>
-            <input
-              id="email" name="email" type="email"
-              className="form-input" placeholder="Enter your email"
-              value={formData.email} onChange={handleChange}
-              required disabled={loading}
-            />
-          </div>
+          <div className="register-grid">
+            <div className="form-group">
+              <label htmlFor="password" className="form-label">Password</label>
+              <div className="password-field">
+                <input
+                  id="password"
+                  name="password"
+                  type={showPassword ? 'text' : 'password'}
+                  className="form-input password-input"
+                  placeholder="Create a password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowPassword((value) => !value)}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                >
+                  <EyeIcon open={showPassword} />
+                </button>
+              </div>
+            </div>
 
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">Password</label>
-            <input
-              id="password" name="password" type="password"
-              className="form-input" placeholder="Create a password"
-              value={formData.password} onChange={handleChange}
-              required disabled={loading}
-            />
+            <div className="form-group">
+              <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
+              <div className="password-field">
+                <input
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  type={showConfirmPassword ? 'text' : 'password'}
+                  className="form-input password-input"
+                  placeholder="Confirm your password"
+                  value={formData.confirmPassword}
+                  onChange={handleChange}
+                  required
+                  disabled={loading}
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowConfirmPassword((value) => !value)}
+                  aria-label={showConfirmPassword ? 'Hide password' : 'Show password'}
+                >
+                  <EyeIcon open={showConfirmPassword} />
+                </button>
+              </div>
+            </div>
           </div>
-
-          <div className="form-group">
-            <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
-            <input
-              id="confirmPassword" name="confirmPassword" type="password"
-              className="form-input" placeholder="Confirm your password"
-              value={formData.confirmPassword} onChange={handleChange}
-              required disabled={loading}
-            />
-          </div>
-
-        
 
           {formData.role === 'STUDENT' && (
-            <>
+            <div className="register-grid">
               <div className="form-group">
                 <label htmlFor="department" className="form-label">
                   Department <span className="optional">(Optional)</span>
                 </label>
                 <input
-                  id="department" name="department" type="text"
-                  className="form-input" placeholder="e.g., Computer Science"
-                  value={formData.department} onChange={handleChange}
+                  id="department"
+                  name="department"
+                  type="text"
+                  className="form-input"
+                  placeholder="e.g., Computer Science"
+                  value={formData.department}
+                  onChange={handleChange}
                   disabled={loading}
                 />
               </div>
@@ -161,8 +223,10 @@ export const RegisterPage = () => {
                   Year <span className="optional">(Optional)</span>
                 </label>
                 <select
-                  id="year" className="form-input form-select"
-                  value={formData.year} onChange={handleYearChange}
+                  id="year"
+                  className="form-input form-select"
+                  value={formData.year}
+                  onChange={handleYearChange}
                   disabled={loading}
                 >
                   <option value="">Select year</option>
@@ -173,7 +237,7 @@ export const RegisterPage = () => {
                   <option value="graduate">Graduate</option>
                 </select>
               </div>
-            </>
+            </div>
           )}
 
           <button type="submit" className="register-button" disabled={loading}>

@@ -1,12 +1,5 @@
 import axios from 'axios';
-
-const API = 'http://localhost:8080/api';
-
-const getUser = () => JSON.parse(localStorage.getItem('ced_user') || 'null');
-
-const api = axios.create({ baseURL: API });
-
-// ── Helpers ───────────────────────────────────────────────────────────────────
+import { API_BASE_URL, AUTH_STORAGE_KEY } from '../config/appConfig';
 
 const EVENT_IMAGES = [
   'https://images.unsplash.com/photo-1540575467063-178a50c2df87?w=800&q=80',
@@ -16,6 +9,10 @@ const EVENT_IMAGES = [
   'https://images.unsplash.com/photo-1505373877841-8d25f7d46678?w=800&q=80',
   'https://images.unsplash.com/photo-1519389950473-47ba0277781c?w=800&q=80',
 ];
+
+const getUser = () => JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || 'null');
+
+const api = axios.create({ baseURL: API_BASE_URL });
 
 const inferCategory = (title = '') => {
   if (/tech|hack|academic|science|code|program/i.test(title)) return 'academic';
@@ -32,7 +29,6 @@ const formatTime = (t) => {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
 };
 
-// Enrich a backend event with UI-friendly fields
 const enrich = (event) => ({
   ...event,
   category: inferCategory(event.title),
@@ -41,34 +37,27 @@ const enrich = (event) => ({
   endTimeFormatted: event.endTime ? formatTime(event.endTime) : null,
 });
 
-// ── Service ───────────────────────────────────────────────────────────────────
-
 const eventService = {
-  // Get all events
   getAllEvents: async () => {
     const res = await api.get('/events');
     return res.data.map(enrich);
   },
 
-  // Get single event by ID
   getEventById: async (id) => {
     const res = await api.get(`/events/${id}`);
     return enrich(res.data);
   },
 
-  // Get events created by organizer
   getEventsByOrganizer: async (userId) => {
     const res = await api.get(`/events/organizer/${userId}`);
     return res.data.map(enrich);
   },
 
-  // Create a new event (organizer)
   createEvent: async (eventData) => {
     const res = await api.post('/events', eventData);
     return enrich(res.data);
   },
 
-  // Register current user for an event
   registerForEvent: async (eventId) => {
     const user = getUser();
     const res = await api.post('/registrations', {
@@ -78,17 +67,14 @@ const eventService = {
     return res.data;
   },
 
-  // Get registrations for current user (returns Registration[])
   getMyRegistrations: async () => {
     const user = getUser();
     const res = await api.get(`/registrations/user/${user.userId}`);
     return res.data;
   },
 
-  // Get registered events with full event details for current user
   getMyRegisteredEvents: async () => {
     const user = getUser();
-    // Fetch registrations + all events in parallel
     const [regsRes, eventsRes] = await Promise.all([
       api.get(`/registrations/user/${user.userId}`),
       api.get('/events'),
@@ -104,30 +90,25 @@ const eventService = {
       .filter(Boolean);
   },
 
-  // Get registered students for an event (organizer use)
   getEventRegistrations: async (eventId) => {
     const res = await api.get(`/registrations/event/${eventId}`);
     return res.data;
   },
 
-  // Check if current user is registered for a specific event
   isRegistered: async (eventId) => {
     const user = getUser();
     const res = await api.get(`/registrations/check?userId=${user.userId}&eventId=${eventId}`);
-    return res.data; // boolean
+    return res.data;
   },
 
-
-    // Cancel registration for current user   ← ADD THIS
   cancelRegistration: async (eventId) => {
     const user = getUser();
     const res = await api.delete(`/registrations?userId=${user.userId}&eventId=${eventId}`);
     return res.data;
   },
-  // ── Client-side filter & sort helpers ─────────────────
 
-  filterEvents: (events, { search = '', category = 'all', dateFrom, dateTo } = {}) => {
-    return events.filter((e) => {
+  filterEvents: (events, { search = '', category = 'all', dateFrom, dateTo } = {}) => (
+    events.filter((e) => {
       const matchSearch =
         !search ||
         e.title?.toLowerCase().includes(search.toLowerCase()) ||
@@ -139,8 +120,8 @@ const eventService = {
       const matchTo = !dateTo || new Date(e.date) <= new Date(dateTo);
 
       return matchSearch && matchCategory && matchFrom && matchTo;
-    });
-  },
+    })
+  ),
 
   sortEvents: (events, sortBy = 'date-asc') => {
     const sorted = [...events];

@@ -1,7 +1,7 @@
 import axios from 'axios';
+import { API_BASE_URL } from '../config/appConfig';
 
-const API = 'http://localhost:8080/api';
-const api = axios.create({ baseURL: API });
+const api = axios.create({ baseURL: API_BASE_URL });
 
 const userService = {
   updateProfile: async (userId, { fullName, currentPassword, newPassword }) => {
@@ -15,7 +15,7 @@ const userService = {
 
   getProfile: async (email) => {
     const res = await api.get(`/user/me?email=${encodeURIComponent(email)}`);
-    return res.data; // { userId, fullName, email, role, createdAt, lastLogin }
+    return res.data;
   },
 };
 

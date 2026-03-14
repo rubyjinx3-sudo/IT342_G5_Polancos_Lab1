@@ -1,13 +1,12 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 export default function Navbar() {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
-
-  // ✅ FIX: role is stored lowercase, compare lowercase
   const isOrganizer = user?.role?.toLowerCase() === 'organizer';
+  const avatarSrc = user?.avatarUrl || user?.avatarDataUrl || '';
 
   const handleLogout = () => {
     logout();
@@ -16,18 +15,32 @@ export default function Navbar() {
 
   return (
     <nav className="navbar">
-      <div className="navbar-brand">
-        <span className="brand-icon">✦</span>
-        <span className="brand-name">Campus Events</span>
-      </div>
-      <div className="navbar-links">
-        {isOrganizer ? (
-          <Link to="/organizer" className="nav-link">My Events</Link>
-        ) : (
-          <Link to="/dashboard" className="nav-link">Dashboard</Link>
-        )}
-        <Link to="/profile" className="nav-link">Profile</Link>
-        <button className="nav-link nav-logout" onClick={handleLogout}>Logout</button>
+      <div className="navbar-inner">
+        <div className="navbar-brand">
+          <span className="brand-icon">CE</span>
+          <div className="brand-copy">
+            <Link to={isOrganizer ? '/organizer' : '/dashboard'} className="brand-name">Campus Events</Link>
+            <span className="brand-subtitle">{isOrganizer ? 'Organizer workspace' : 'Student workspace'}</span>
+          </div>
+        </div>
+        <div className="navbar-links">
+          <Link to="/profile" className="nav-avatar-link" aria-label="Open profile">
+            {avatarSrc ? (
+              <img src={avatarSrc} alt="Profile" className="nav-avatar-image" />
+            ) : (
+              <span className="nav-avatar-fallback">
+                {(user?.fullName || user?.name || user?.email || 'U').charAt(0).toUpperCase()}
+              </span>
+            )}
+          </Link>
+          {isOrganizer ? (
+            <NavLink to="/organizer" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>My Events</NavLink>
+          ) : (
+            <NavLink to="/dashboard" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>Dashboard</NavLink>
+          )}
+          <NavLink to="/profile" className={({ isActive }) => `nav-link${isActive ? ' active' : ''}`}>Profile</NavLink>
+          <button className="nav-link nav-logout" onClick={handleLogout}>Logout</button>
+        </div>
       </div>
     </nav>
   );

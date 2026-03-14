@@ -8,9 +8,9 @@ import './DashboardPage.css';
 const CATEGORY_COLORS = {
   academic: { bg: '#EEF2FF', color: '#4F46E5' },
   cultural: { bg: '#FDF2F8', color: '#BE185D' },
-  career:   { bg: '#ECFDF5', color: '#059669' },
-  social:   { bg: '#FFF7ED', color: '#EA580C' },
-  sports:   { bg: '#F0FDF4', color: '#16A34A' },
+  career: { bg: '#ECFDF5', color: '#059669' },
+  social: { bg: '#FFF7ED', color: '#EA580C' },
+  sports: { bg: '#F0FDF4', color: '#16A34A' },
 };
 
 const Tag = ({ label }) => {
@@ -74,20 +74,41 @@ const DashboardPage = () => {
     }
   };
 
-  if (loading) return (
-    <div className="page-loading">
-      <div className="spinner" />
-      <p>Loading dashboard...</p>
-    </div>
-  );
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <div className="spinner" />
+        <p>Loading dashboard...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="dashboard-page">
-      {/* Upcoming Events */}
+      <section className="dashboard-hero">
+        <div>
+          <div className="dashboard-eyebrow">Overview</div>
+          <h1 className="dashboard-hero-title">Welcome back, {user?.fullName?.split(' ')[0] || 'Student'}.</h1>
+          <p className="dashboard-hero-copy">
+            Track upcoming events, keep your registrations organized, and stay ready for what is next on campus.
+          </p>
+        </div>
+        <div className="dashboard-stats">
+          <div className="dashboard-stat-card">
+            <span className="dashboard-stat-label">Upcoming</span>
+            <strong>{upcoming.length}</strong>
+          </div>
+          <div className="dashboard-stat-card">
+            <span className="dashboard-stat-label">Registered</span>
+            <strong>{myEvents.length}</strong>
+          </div>
+        </div>
+      </section>
+
       <section className="dash-section">
         <div className="section-head">
           <h2 className="section-title">Upcoming Events</h2>
-          <Link to="/dashboard/events" className="view-all-link">View All →</Link>
+          <Link to="/dashboard/events" className="view-all-link">View All</Link>
         </div>
         {upcoming.length === 0 ? (
           <div className="empty-state">
@@ -101,11 +122,10 @@ const DashboardPage = () => {
         )}
       </section>
 
-      {/* My Registered Events */}
       <section className="dash-section">
         <div className="section-head">
           <h2 className="section-title">My Registered Events</h2>
-          <Link to="/dashboard/my-events" className="view-all-link">View All →</Link>
+          <Link to="/dashboard/my-events" className="view-all-link">View All</Link>
         </div>
         {myEvents.length === 0 ? (
           <div className="empty-state card-empty">
@@ -117,18 +137,18 @@ const DashboardPage = () => {
           <div className="reg-table-wrap">
             <table className="reg-table">
               <thead>
-                <tr><th>Event</th><th>Date</th><th>Status</th><th></th></tr>
+                <tr><th>Event</th><th>Date</th><th>Status</th><th /></tr>
               </thead>
               <tbody>
                 {myEvents.slice(0, 5).map((ev) => (
                   <tr key={ev.id}>
-                    <td>
+                    <td data-label="Event">
                       <div className="tbl-event-name">{ev.title}</div>
                       <div className="tbl-event-loc">{ev.location}</div>
                     </td>
-                    <td className="tbl-date">{formatDate(ev.date)}</td>
-                    <td><span className="status-badge">Registered</span></td>
-                    <td>
+                    <td data-label="Date" className="tbl-date">{formatDate(ev.date)}</td>
+                    <td data-label="Status"><span className="status-badge">Registered</span></td>
+                    <td data-label="Action">
                       <Link to={`/dashboard/event/${ev.id}`} className="tbl-view-btn">View</Link>
                     </td>
                   </tr>

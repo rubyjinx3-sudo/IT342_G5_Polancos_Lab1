@@ -1,20 +1,15 @@
-/* ═══════════════════════════════════════════════════════════════
-   POLISHED LOGIN PAGE - Campus Event Tracker
-   Modern gradient design matching logo colors
-   ═══════════════════════════════════════════════════════════════ */
-
 .login-container {
   min-height: 100vh;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 460px);
   align-items: center;
-  justify-content: center;
-  background: linear-gradient(135deg, #F8FAFB 0%, #E8F4F8 50%, #D4F1F4 100%);
-  padding: 2rem 1rem;
+  gap: 2rem;
+  background: linear-gradient(135deg, #f8fbfd 0%, #edf6fa 48%, #e4eef6 100%);
+  padding: 2rem;
   position: relative;
   overflow: hidden;
 }
 
-/* Animated Background Pattern */
 .login-container::before {
   content: '';
   position: absolute;
@@ -43,7 +38,73 @@
   66% { transform: translate(-20px, 20px) rotate(-5deg); }
 }
 
-/* Login Card */
+.auth-showcase {
+  position: relative;
+  z-index: 1;
+  color: #123458;
+  padding: 2rem clamp(0rem, 2vw, 2rem);
+}
+
+.auth-brand-block {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.75rem;
+}
+
+.auth-brand-logo {
+  width: clamp(5rem, 10vw, 7rem);
+  height: auto;
+  flex-shrink: 0;
+  filter: drop-shadow(0 18px 28px rgba(18, 52, 88, 0.12));
+}
+
+.auth-pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem 0.85rem;
+  border-radius: 999px;
+  background: rgba(18, 52, 88, 0.08);
+  color: #123458;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.auth-showcase-title {
+  font-size: clamp(2.25rem, 4vw, 4.4rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+  margin: 0 0 1rem;
+  max-width: 10ch;
+}
+
+.auth-showcase-copy {
+  max-width: 36rem;
+  font-size: 1rem;
+  line-height: 1.7;
+  color: #4c647b;
+  margin: 0 0 1.5rem;
+}
+
+.auth-feature-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+  max-width: 46rem;
+}
+
+.auth-feature-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(18, 52, 88, 0.08);
+  box-shadow: 0 18px 40px rgba(18, 52, 88, 0.06);
+}
+
 .login-card {
   background: rgba(255, 255, 255, 0.95);
   backdrop-filter: blur(20px);
@@ -51,7 +112,7 @@
   padding: 3rem 2.5rem;
   width: 100%;
   max-width: 28rem;
-  box-shadow: 
+  box-shadow:
     0 20px 60px rgba(23, 162, 184, 0.15),
     0 0 0 1px rgba(255, 255, 255, 0.5) inset;
   border: 1px solid rgba(23, 162, 184, 0.1);
@@ -71,17 +132,17 @@
   }
 }
 
-/* Header Section */
 .login-header {
   text-align: center;
   margin-bottom: 2.5rem;
 }
 
-.login-logo {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-bottom: 1.25rem;
+.login-logo-image {
+  width: 6rem;
+  height: auto;
+  margin: 0 auto 1rem;
+  display: block;
+  filter: drop-shadow(0 18px 28px rgba(23, 162, 184, 0.16));
 }
 
 .logo-icon {
@@ -94,17 +155,12 @@
   justify-content: center;
   box-shadow: 0 8px 24px rgba(23, 162, 184, 0.3);
   animation: pulse 2s ease-in-out infinite;
+  margin: 0 auto 1.25rem;
 }
 
 @keyframes pulse {
   0%, 100% { transform: scale(1); }
   50% { transform: scale(1.05); }
-}
-
-.logo-icon img {
-  width: 2.5rem;
-  height: 2.5rem;
-  filter: brightness(0) invert(1);
 }
 
 .login-title {
@@ -125,7 +181,6 @@
   font-weight: 500;
 }
 
-/* Form Styles */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -138,6 +193,10 @@
   gap: 0.5rem;
 }
 
+.password-field {
+  position: relative;
+}
+
 .form-label {
   font-size: 0.875rem;
   font-weight: 600;
@@ -145,14 +204,9 @@
   margin-left: 0.25rem;
 }
 
-.form-input-wrapper {
-  position: relative;
-}
-
 .form-input {
   width: 100%;
   padding: 0.875rem 1.125rem;
-  padding-left: 2.75rem;
   border: 2px solid #E2E8F0;
   border-radius: 0.75rem;
   font-size: 0.9375rem;
@@ -161,6 +215,25 @@
   outline: none;
   transition: all 0.2s ease;
   font-family: inherit;
+}
+
+.password-input {
+  padding-right: 3.25rem;
+}
+
+.password-toggle {
+  position: absolute;
+  top: 50%;
+  right: 0.85rem;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #64748B;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
 }
 
 .form-input:focus {
@@ -179,21 +252,6 @@
   color: #94A3B8;
 }
 
-/* Input Icons */
-.input-icon {
-  position: absolute;
-  left: 1rem;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #64748B;
-  pointer-events: none;
-}
-
-.form-input:focus + .input-icon {
-  color: #17A2B8;
-}
-
-/* Error Message */
 .error-box {
   display: flex;
   align-items: center;
@@ -214,12 +272,6 @@
   75% { transform: translateX(5px); }
 }
 
-.error-icon {
-  flex-shrink: 0;
-  color: #EF4444;
-}
-
-/* Login Button */
 .login-btn {
   width: 100%;
   padding: 0.875rem 1.25rem;
@@ -269,7 +321,6 @@
   transform: none;
 }
 
-/* Footer */
 .login-footer {
   text-align: center;
   margin-top: 1.75rem;
@@ -306,24 +357,43 @@
   color: #138496;
 }
 
-/* Loading Spinner */
-.login-spinner {
-  width: 1.25rem;
-  height: 1.25rem;
-  border: 2px solid rgba(255, 255, 255, 0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.6s linear infinite;
-  display: inline-block;
-  margin-right: 0.5rem;
+@media (max-width: 980px) {
+  .login-container {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-showcase {
+    padding: 0;
+  }
+
+  .auth-brand-block {
+    align-items: flex-start;
+  }
+
+  .auth-showcase-title {
+    max-width: 14ch;
+  }
 }
 
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Responsive Design */
 @media (max-width: 640px) {
+  .login-container {
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  .auth-feature-list {
+    grid-template-columns: 1fr;
+  }
+
+  .auth-brand-block {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .auth-brand-logo {
+    width: 4.75rem;
+  }
+
   .login-card {
     padding: 2rem 1.5rem;
     border-radius: 1rem;
@@ -340,6 +410,5 @@
 
   .form-input {
     padding: 0.75rem 1rem;
-    padding-left: 2.5rem;
   }
 }
