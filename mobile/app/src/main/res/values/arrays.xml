@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="dashboard_category_filter_options">
+        <item>All Categories</item>
+        <item>Academic</item>
+        <item>Cultural</item>
+        <item>Career</item>
+        <item>Sports</item>
+        <item>Technology</item>
+        <item>Social</item>
+    </string-array>
+
+    <string-array name="dashboard_department_filter_options">
+        <item>All Colleges</item>
+        <item>College of Engineering and Architecture</item>
+        <item>College of Management, Business and Accountancy</item>
+        <item>College of Arts, Science, and Education</item>
+        <item>College of Nursing and Allied Health Sciences</item>
+        <item>College of Computer Studies</item>
+        <item>College of Criminal Justice</item>
+        <item>All Colleges Events</item>
+    </string-array>
+</resources>

@@ -67,5 +67,12 @@
     <string name="dashboard_section_upcoming">Upcoming Events</string>
     <string name="dashboard_section_registered">My Registered Events</string>
     <string name="dashboard_no_events">No events found.</string>
+    <string name="dashboard_no_events_filtered">No upcoming events match the current filters.</string>
     <string name="dashboard_no_registered">You have not registered for any events yet.</string>
+    <string name="dashboard_no_registered_filtered">No registered events match the current filters.</string>
+    <string name="dashboard_search_hint">Search by title, location, or category</string>
+    <string name="dashboard_department_label">College</string>
+    <string name="dashboard_date_hint">Filter by date (YYYY-MM-DD)</string>
+    <string name="dashboard_reset_filters">Reset</string>
+    <string name="dashboard_event_image">Event image</string>
 </resources>
