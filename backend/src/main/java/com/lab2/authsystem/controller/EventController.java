@@ -46,6 +46,16 @@ public class EventController {
         return ResponseEntity.ok(saved);
     }
 
+    @PutMapping("/events/{id}")
+    public ResponseEntity<?> updateEvent(@PathVariable Long id, @RequestBody Event event) {
+        try {
+            Event updated = eventService.updateEvent(id, event);
+            return ResponseEntity.ok(updated);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // ── POST register for event ────────────────────────────
     @PostMapping("/registrations")
     public ResponseEntity<?> registerForEvent(@RequestBody Map<String, Long> body) {

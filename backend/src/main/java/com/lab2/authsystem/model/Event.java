@@ -31,6 +31,15 @@ public class Event {
     @Column(nullable = false)
     private String location;
 
+    @Column(name = "category")
+    private String category;
+
+    @Column(name = "department")
+    private String department;
+
+    @Column(name = "image_url", columnDefinition = "TEXT")
+    private String imageUrl;
+
     @Column(name = "organizer_id", nullable = false)
     private Long organizerId;
 
@@ -67,6 +76,15 @@ public class Event {
 
     public String getLocation()                  { return location; }
     public void setLocation(String location)     { this.location = location; }
+
+    public String getCategory()                    { return category; }
+    public void setCategory(String category)       { this.category = category; }
+
+    public String getDepartment()                    { return department; }
+    public void setDepartment(String department)     { this.department = department; }
+
+    public String getImageUrl()                    { return imageUrl; }
+    public void setImageUrl(String imageUrl)       { this.imageUrl = imageUrl; }
 
     public Long getOrganizerId()                     { return organizerId; }
     public void setOrganizerId(Long organizerId)     { this.organizerId = organizerId; }

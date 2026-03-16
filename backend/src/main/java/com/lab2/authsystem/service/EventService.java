@@ -40,7 +40,41 @@ public class EventService {
     }
 
     public Event createEvent(Event event) {
+        normalizeEvent(event);
         return eventRepository.save(event);
+    }
+
+    public Event updateEvent(Long id, Event eventDetails) {
+        Event existing = eventRepository.findById(id)
+                .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        existing.setTitle(eventDetails.getTitle());
+        existing.setDescription(eventDetails.getDescription());
+        existing.setDate(eventDetails.getDate());
+        existing.setTime(eventDetails.getTime());
+        existing.setEndTime(eventDetails.getEndTime());
+        existing.setLocation(eventDetails.getLocation());
+        existing.setCategory(eventDetails.getCategory());
+        existing.setDepartment(eventDetails.getDepartment());
+        existing.setImageUrl(eventDetails.getImageUrl());
+        existing.setOrganizerName(eventDetails.getOrganizerName());
+
+        normalizeEvent(existing);
+        return eventRepository.save(existing);
+    }
+
+    public void backfillEventMetadata() {
+        List<Event> events = eventRepository.findAll();
+        boolean updated = false;
+
+        for (Event event : events) {
+            boolean eventUpdated = normalizeEvent(event);
+            updated = updated || eventUpdated;
+        }
+
+        if (updated) {
+            eventRepository.saveAll(events);
+        }
     }
 
     // ── REGISTRATIONS ─────────────────────────────────────
@@ -84,5 +118,42 @@ public class EventService {
             throw new RuntimeException("Registration not found");
         }
         registrationRepository.deleteByUserIdAndEventId(userId, eventId);
+    }
+
+    private boolean normalizeEvent(Event event) {
+        boolean updated = false;
+
+        if (event.getCategory() == null || event.getCategory().isBlank()) {
+            event.setCategory(inferCategory(event.getTitle()));
+            updated = true;
+        }
+
+        if (event.getDepartment() == null || event.getDepartment().isBlank()) {
+            event.setDepartment("All Colleges");
+            updated = true;
+        }
+
+        return updated;
+    }
+
+    private String inferCategory(String title) {
+        String safeTitle = title == null ? "" : title;
+
+        if (safeTitle.matches("(?i).*(tech|hack|science|code|program|robot|innovation|digital|ict).*")) {
+            return "technology";
+        }
+        if (safeTitle.matches("(?i).*(academic|research|seminar|workshop|quiz|forum|lecture).*")) {
+            return "academic";
+        }
+        if (safeTitle.matches("(?i).*(cultur|music|art|festival|dance|perform).*")) {
+            return "cultural";
+        }
+        if (safeTitle.matches("(?i).*(career|fair|job|summit|entrepreneur|business).*")) {
+            return "career";
+        }
+        if (safeTitle.matches("(?i).*(sport|game|tournament|athletic).*")) {
+            return "sports";
+        }
+        return "social";
     }
 }
