@@ -1,4 +1,4 @@
-import { SUPABASE_ANON_KEY, SUPABASE_PROFILE_BUCKET, SUPABASE_URL } from '../config/appConfig';
+import { SUPABASE_ANON_KEY, SUPABASE_EVENT_BUCKET, SUPABASE_PROFILE_BUCKET, SUPABASE_URL } from '../config/appConfig';
 
 const sanitizeSegment = (value) => value.replace(/[^a-zA-Z0-9._-]/g, '_');
 
@@ -35,4 +35,33 @@ export const uploadProfilePhoto = async (file, email) => {
   }
 
   return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_PROFILE_BUCKET}/${objectPath}`;
+};
+
+export const uploadEventImage = async (file, slug) => {
+  ensureConfigured();
+
+  if (!file) throw new Error('No event image selected.');
+
+  const extension = file.name.includes('.') ? file.name.split('.').pop()?.toLowerCase() : 'jpg';
+  const safeSlug = sanitizeSegment(slug || 'event');
+  const objectPath = `events/${safeSlug}-${Date.now()}.${extension || 'jpg'}`;
+  const uploadUrl = `${SUPABASE_URL}/storage/v1/object/${SUPABASE_EVENT_BUCKET}/${objectPath}`;
+
+  const response = await fetch(uploadUrl, {
+    method: 'POST',
+    headers: {
+      apikey: SUPABASE_ANON_KEY,
+      Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      'Content-Type': file.type || 'application/octet-stream',
+      'x-upsert': 'true',
+    },
+    body: file,
+  });
+
+  if (!response.ok) {
+    const message = await response.text();
+    throw new Error(message || 'Failed to upload event image.');
+  }
+
+  return `${SUPABASE_URL}/storage/v1/object/public/${SUPABASE_EVENT_BUCKET}/${objectPath}`;
 };

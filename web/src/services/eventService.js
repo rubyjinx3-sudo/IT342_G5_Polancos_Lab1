@@ -15,7 +15,8 @@ const getUser = () => JSON.parse(localStorage.getItem(AUTH_STORAGE_KEY) || 'null
 const api = axios.create({ baseURL: API_BASE_URL });
 
 const inferCategory = (title = '') => {
-  if (/tech|hack|academic|science|code|program/i.test(title)) return 'academic';
+  if (/tech|hack|science|code|program|robot|innovation|digital|ict/i.test(title)) return 'technology';
+  if (/academic|research|seminar|workshop|quiz|forum|lecture/i.test(title)) return 'academic';
   if (/cultur|music|art|festival|dance|perform/i.test(title)) return 'cultural';
   if (/career|fair|job|summit|entrepreneur|business/i.test(title)) return 'career';
   if (/sport|game|tournament|athletic/i.test(title)) return 'sports';
@@ -29,10 +30,16 @@ const formatTime = (t) => {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
 };
 
+const startOfDay = (value) => {
+  const date = new Date(value);
+  date.setHours(0, 0, 0, 0);
+  return date;
+};
+
 const enrich = (event) => ({
   ...event,
-  category: inferCategory(event.title),
-  image: EVENT_IMAGES[(Number(event.id) - 1) % EVENT_IMAGES.length],
+  category: event.category || inferCategory(event.title),
+  image: event.imageUrl || EVENT_IMAGES[(Number(event.id) - 1) % EVENT_IMAGES.length],
   timeFormatted: formatTime(event.time),
   endTimeFormatted: event.endTime ? formatTime(event.endTime) : null,
 });
@@ -55,6 +62,11 @@ const eventService = {
 
   createEvent: async (eventData) => {
     const res = await api.post('/events', eventData);
+    return enrich(res.data);
+  },
+
+  updateEvent: async (eventId, eventData) => {
+    const res = await api.put(`/events/${eventId}`, eventData);
     return enrich(res.data);
   },
 
@@ -107,19 +119,22 @@ const eventService = {
     return res.data;
   },
 
-  filterEvents: (events, { search = '', category = 'all', dateFrom, dateTo } = {}) => (
+  filterEvents: (events, { search = '', category = 'all', department = 'all', dateFrom, dateTo } = {}) => (
     events.filter((e) => {
       const matchSearch =
         !search ||
         e.title?.toLowerCase().includes(search.toLowerCase()) ||
         e.location?.toLowerCase().includes(search.toLowerCase()) ||
-        e.organizerName?.toLowerCase().includes(search.toLowerCase());
+        e.organizerName?.toLowerCase().includes(search.toLowerCase()) ||
+        e.department?.toLowerCase().includes(search.toLowerCase());
 
       const matchCategory = category === 'all' || e.category === category;
-      const matchFrom = !dateFrom || new Date(e.date) >= new Date(dateFrom);
-      const matchTo = !dateTo || new Date(e.date) <= new Date(dateTo);
+      const matchDepartment = department === 'all' || e.department === department;
+      const eventDate = startOfDay(e.date);
+      const matchFrom = !dateFrom || eventDate >= startOfDay(dateFrom);
+      const matchTo = !dateTo || eventDate <= startOfDay(dateTo);
 
-      return matchSearch && matchCategory && matchFrom && matchTo;
+      return matchSearch && matchCategory && matchDepartment && matchFrom && matchTo;
     })
   ),
 
@@ -132,9 +147,9 @@ const eventService = {
   },
 
   getUpcomingEvents: (events, limit = 6) => {
-    const today = new Date();
+    const today = startOfDay(new Date());
     return events
-      .filter((e) => new Date(e.date) >= today)
+      .filter((e) => startOfDay(e.date) >= today)
       .sort((a, b) => new Date(a.date) - new Date(b.date))
       .slice(0, limit);
   },

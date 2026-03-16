@@ -9,6 +9,7 @@ const CATEGORY_COLORS = {
   academic: { bg: '#EEF2FF', color: '#4F46E5' },
   cultural: { bg: '#FDF2F8', color: '#BE185D' },
   career:   { bg: '#ECFDF5', color: '#059669' },
+  technology: { bg: '#ECFEFF', color: '#0F766E' },
   social:   { bg: '#FFF7ED', color: '#EA580C' },
   sports:   { bg: '#F0FDF4', color: '#16A34A' },
 };
@@ -55,7 +56,12 @@ const EventDetailPage = () => {
   setRegistering(true);
   try {
     await eventService.registerForEvent(eventId);
-    setIsRegistered(true);
+    navigate('/dashboard', {
+      replace: true,
+      state: {
+        successMessage: `Successfully registered for the ${event?.title || 'selected'} event.`,
+      },
+    });
   } catch (err) {
     const msg = err.response?.data?.message 
       || err.response?.data 
@@ -138,6 +144,11 @@ const handleCancel = async () => {
               <MapPin size={16} className="meta-icon" />
               <span>{event.location}</span>
             </div>
+            {event.department && (
+              <div className="meta-item">
+                <span>{event.department}</span>
+              </div>
+            )}
             {event.organizerName && (
               <div className="meta-item">
                 <User size={16} className="meta-icon" />

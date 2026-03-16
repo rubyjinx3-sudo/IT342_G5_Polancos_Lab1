@@ -1,24 +1,48 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import eventService from '../services/eventService';
-import { Plus, Calendar, Clock, MapPin, Users, X, CheckCircle, AlertCircle } from 'lucide-react';
+import { uploadEventImage } from '../services/supabaseStorage';
+import { Plus, Calendar, Clock, MapPin, Users, X, CheckCircle, AlertCircle, Pencil } from 'lucide-react';
 import './OrganizerPage.css';
 
 const CATEGORY_COLORS = {
   academic: { bg: '#EEF2FF', color: '#4F46E5' },
   cultural: { bg: '#FDF2F8', color: '#BE185D' },
   career:   { bg: '#ECFDF5', color: '#059669' },
+  technology: { bg: '#ECFEFF', color: '#0F766E' },
   social:   { bg: '#FFF7ED', color: '#EA580C' },
   sports:   { bg: '#F0FDF4', color: '#16A34A' },
 };
 
-const inferCategory = (title = '') => {
-  if (/tech|hack|academic|science|code/i.test(title)) return 'academic';
-  if (/cultur|music|art|festival/i.test(title)) return 'cultural';
-  if (/career|fair|job|summit|entrepreneur/i.test(title)) return 'career';
-  if (/sport|game|tournament/i.test(title)) return 'sports';
-  return 'social';
-};
+const CATEGORY_OPTIONS = [
+  { value: 'academic', label: 'Academic', template: { title: 'Research Seminar 2026', description: 'Academic seminar for students and faculty focused on current research, learning, and professional development.' } },
+  { value: 'cultural', label: 'Cultural', template: { title: 'Buwan ng Wika Cultural Festival', description: 'Cultural celebration featuring performances, exhibits, and student participation across colleges.' } },
+  { value: 'career', label: 'Career', template: { title: 'Career Fair 2026', description: 'Career development event with recruiters, alumni speakers, and internship opportunities.' } },
+  { value: 'sports', label: 'Sports', template: { title: 'Inter-College Sports Tournament', description: 'Campus sports event with inter-college participation and athletic competitions.' } },
+  { value: 'technology', label: 'Technology', template: { title: 'Hackathon and Innovation Expo', description: 'Technology-focused event featuring coding, product demos, and digital innovation.' } },
+  { value: 'social', label: 'Social', template: { title: 'Campus Social Mixer', description: 'General campus social event for student engagement, networking, and community building.' } },
+];
+
+const DEPARTMENT_OPTIONS = [
+  'College of Engineering and Architecture',
+  'College of Management, Business and Accountancy',
+  'College of Arts, Science, and Education',
+  'College of Nursing and Allied Health Sciences',
+  'College of Computer Studies',
+  'College of Criminal Justice',
+  'All Colleges',
+];
+
+const createInitialForm = () => ({
+  title: '',
+  description: '',
+  date: '',
+  time: '',
+  endTime: '',
+  location: '',
+  category: CATEGORY_OPTIONS[0].value,
+  department: DEPARTMENT_OPTIONS[0],
+});
 
 function formatDate(d) {
   if (!d) return '';
@@ -32,6 +56,29 @@ function formatTime(t) {
   return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
 }
 
+function getErrorMessage(err, fallback) {
+  const responseData = err?.response?.data;
+
+  if (typeof responseData === 'string' && responseData.trim()) {
+    return responseData;
+  }
+
+  if (responseData && typeof responseData === 'object') {
+    if (typeof responseData.message === 'string' && responseData.message.trim()) {
+      return responseData.message;
+    }
+    if (typeof responseData.error === 'string' && responseData.error.trim()) {
+      return responseData.error;
+    }
+  }
+
+  if (typeof err?.message === 'string' && err.message.trim()) {
+    return err.message;
+  }
+
+  return fallback;
+}
+
 const OrganizerPage = () => {
   const { user } = useAuth();
   const [events, setEvents] = useState([]);
@@ -43,9 +90,11 @@ const OrganizerPage = () => {
   const [msg, setMsg] = useState(null);
 
   // Create event form
-  const [form, setForm] = useState({
-    title: '', description: '', date: '', time: '', endTime: '', location: '',
-  });
+  const [form, setForm] = useState(createInitialForm);
+  const [editingEventId, setEditingEventId] = useState(null);
+  const [existingImageUrl, setExistingImageUrl] = useState('');
+  const [selectedImageFile, setSelectedImageFile] = useState(null);
+  const [imagePreview, setImagePreview] = useState('');
   const [creating, setCreating] = useState(false);
 
   useEffect(() => {
@@ -64,22 +113,47 @@ const OrganizerPage = () => {
     }
   };
 
-  const handleCreateEvent = async (e) => {
+  const resetForm = () => {
+    setForm(createInitialForm());
+    setEditingEventId(null);
+    setExistingImageUrl('');
+    setSelectedImageFile(null);
+    setImagePreview('');
+  };
+
+  const handleSaveEvent = async (e) => {
     e.preventDefault();
     setMsg(null);
     setCreating(true);
     try {
-      await eventService.createEvent({
+      let imageUrl = existingImageUrl;
+      if (selectedImageFile) {
+        imageUrl = await uploadEventImage(
+          selectedImageFile,
+          `${form.category}-${form.department}-${form.title}`
+        );
+      }
+
+      const payload = {
         ...form,
+        imageUrl,
         organizerId: user.userId,
         organizerName: user.name || user.fullName,
-      });
-      setMsg({ type: 'success', text: 'Event created successfully!' });
-      setForm({ title: '', description: '', date: '', time: '', endTime: '', location: '' });
+      };
+
+      if (editingEventId) {
+        await eventService.updateEvent(editingEventId, payload);
+        setMsg({ type: 'success', text: 'Event updated successfully.' });
+      } else {
+        await eventService.createEvent(payload);
+        setMsg({ type: 'success', text: 'Event created successfully.' });
+      }
+
+      resetForm();
       setShowForm(false);
       loadMyEvents();
     } catch (err) {
-      setMsg({ type: 'error', text: err.response?.data || err.message || 'Failed to create event.' });
+      setMsg({ type: 'error', text: getErrorMessage(err, 'Failed to save event.') });
     } finally {
       setCreating(false);
     }
@@ -99,6 +173,42 @@ const OrganizerPage = () => {
   };
 
   const setF = (k) => (e) => setForm((f) => ({ ...f, [k]: e.target.value }));
+  const applyCategoryTemplate = (category) => {
+    const selected = CATEGORY_OPTIONS.find((option) => option.value === category);
+    if (!selected) return;
+    setForm((current) => ({
+      ...current,
+      category,
+      title: current.title || selected.template.title,
+      description: current.description || selected.template.description,
+    }));
+  };
+
+  const handleImageChange = (e) => {
+    const file = e.target.files?.[0];
+    setSelectedImageFile(file || null);
+    setImagePreview(file ? URL.createObjectURL(file) : existingImageUrl);
+  };
+
+  const handleEditEvent = (event) => {
+    setEditingEventId(event.id);
+    setExistingImageUrl(event.imageUrl || '');
+    setSelectedImageFile(null);
+    setImagePreview(event.imageUrl || '');
+    setForm({
+      title: event.title || '',
+      description: event.description || '',
+      date: event.date || '',
+      time: event.time || '',
+      endTime: event.endTime || '',
+      location: event.location || '',
+      category: event.category || CATEGORY_OPTIONS[0].value,
+      department: event.department || DEPARTMENT_OPTIONS[0],
+    });
+    setMsg(null);
+    setShowForm(true);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   if (loading) return (
     <div className="page-loading">
@@ -114,7 +224,7 @@ const OrganizerPage = () => {
           <h2 className="organizer-title">My Events</h2>
           <p className="organizer-subtitle">Manage events you've created</p>
         </div>
-        <button className="create-btn" onClick={() => { setShowForm(true); setMsg(null); }}>
+        <button className="create-btn" onClick={() => { resetForm(); setShowForm(true); setMsg(null); }}>
           <Plus size={16} /> Create Event
         </button>
       </div>
@@ -129,11 +239,11 @@ const OrganizerPage = () => {
       {/* Create Event Form */}
       {showForm && (
         <div className="create-event-card">
-          <div className="create-card-header">
-            <h3 className="create-card-title">Create New Event</h3>
-            <button className="close-btn" onClick={() => setShowForm(false)}><X size={18} /></button>
+        <div className="create-card-header">
+            <h3 className="create-card-title">{editingEventId ? 'Edit Event' : 'Create New Event'}</h3>
+            <button className="close-btn" onClick={() => { setShowForm(false); resetForm(); }}><X size={18} /></button>
           </div>
-          <form onSubmit={handleCreateEvent} className="create-form">
+          <form onSubmit={handleSaveEvent} className="create-form">
             <div className="form-row">
               <div className="form-group">
                 <label className="form-label">Event Title *</label>
@@ -145,6 +255,51 @@ const OrganizerPage = () => {
                 <input className="form-input" placeholder="e.g. Main Auditorium"
                   value={form.location} onChange={setF('location')} required disabled={creating} />
               </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
+                <label className="form-label">Category *</label>
+                <select
+                  className="form-input"
+                  value={form.category}
+                  onChange={(e) => applyCategoryTemplate(e.target.value)}
+                  required
+                  disabled={creating}
+                >
+                  {CATEGORY_OPTIONS.map((category) => (
+                    <option key={category.value} value={category.value}>{category.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div className="form-group">
+                <label className="form-label">Event Image</label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="form-input"
+                  onChange={handleImageChange}
+                  disabled={creating}
+                />
+              </div>
+            </div>
+            {imagePreview && (
+              <div className="event-image-preview">
+                <img src={imagePreview} alt="Event preview" />
+              </div>
+            )}
+            <div className="form-group">
+              <label className="form-label">College / Department *</label>
+              <select
+                className="form-input"
+                value={form.department}
+                onChange={setF('department')}
+                required
+                disabled={creating}
+              >
+                {DEPARTMENT_OPTIONS.map((department) => (
+                  <option key={department} value={department}>{department}</option>
+                ))}
+              </select>
             </div>
             <div className="form-row">
               <div className="form-group">
@@ -169,9 +324,9 @@ const OrganizerPage = () => {
                 value={form.description} onChange={setF('description')} disabled={creating} rows={3} />
             </div>
             <div className="create-actions">
-              <button type="button" className="cancel-btn" onClick={() => setShowForm(false)}>Cancel</button>
+              <button type="button" className="cancel-btn" onClick={() => { setShowForm(false); resetForm(); }}>Cancel</button>
               <button type="submit" className="submit-btn" disabled={creating}>
-                {creating ? 'Creating...' : 'Create Event'}
+                {creating ? (editingEventId ? 'Saving...' : 'Creating...') : (editingEventId ? 'Save Changes' : 'Create Event')}
               </button>
             </div>
           </form>
@@ -183,14 +338,14 @@ const OrganizerPage = () => {
         <div className="empty-state">
           <Calendar size={40} className="empty-icon" />
           <p>You haven't created any events yet.</p>
-          <button className="create-btn" onClick={() => setShowForm(true)}>
+          <button className="create-btn" onClick={() => { resetForm(); setShowForm(true); }}>
             <Plus size={15} /> Create Your First Event
           </button>
         </div>
       ) : (
         <div className="org-events-grid">
           {events.map((ev) => {
-            const cat = inferCategory(ev.title);
+            const cat = ev.category || 'social';
             const catStyle = CATEGORY_COLORS[cat] || CATEGORY_COLORS.social;
             return (
               <div key={ev.id} className="org-event-card">
@@ -206,7 +361,14 @@ const OrganizerPage = () => {
                     <span><Calendar size={13} /> {formatDate(ev.date)}</span>
                     <span><Clock size={13} /> {formatTime(ev.time)}</span>
                     <span><MapPin size={13} /> {ev.location}</span>
+                    {ev.department && <span>{ev.department}</span>}
                   </div>
+                  <button
+                    className="edit-event-btn"
+                    onClick={() => handleEditEvent(ev)}
+                  >
+                    <Pencil size={14} /> Edit Event
+                  </button>
                   <button
                     className="view-regs-btn"
                     onClick={() => handleViewRegistrations(ev)}

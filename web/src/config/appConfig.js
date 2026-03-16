@@ -5,3 +5,4 @@ export const PROFILE_PREFS_KEY = 'ced_profile_prefs';
 export const SUPABASE_URL = process.env.REACT_APP_SUPABASE_URL || '';
 export const SUPABASE_ANON_KEY = process.env.REACT_APP_SUPABASE_ANON_KEY || '';
 export const SUPABASE_PROFILE_BUCKET = process.env.REACT_APP_SUPABASE_PROFILE_BUCKET || 'camp_profile';
+export const SUPABASE_EVENT_BUCKET = process.env.REACT_APP_SUPABASE_EVENT_BUCKET || 'camp_events';
