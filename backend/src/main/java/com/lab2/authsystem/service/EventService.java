@@ -1,14 +1,13 @@
 package com.lab2.authsystem.service;
 
-import org.springframework.transaction.annotation.Transactional;
 import com.lab2.authsystem.model.Event;
 import com.lab2.authsystem.model.Registration;
-import com.lab2.authsystem.model.User;
 import com.lab2.authsystem.repository.EventRepository;
 import com.lab2.authsystem.repository.RegistrationRepository;
-import com.lab2.authsystem.repository.UserRepository;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.lab2.authsystem.service.event.EventMetadataService;
+import com.lab2.authsystem.service.event.RegistrationView;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,16 +15,21 @@ import java.util.Optional;
 @Service
 public class EventService {
 
-    @Autowired
-    private EventRepository eventRepository;
+    private final EventRepository eventRepository;
+    private final RegistrationRepository registrationRepository;
+    private final EventMetadataService eventMetadataService;
+    private final RegistrationView registrationView;
 
-    @Autowired
-    private RegistrationRepository registrationRepository;
-
-    @Autowired
-    private UserRepository userRepository;
-
-    // ── EVENTS ────────────────────────────────────────────
+    public EventService(
+            EventRepository eventRepository,
+            RegistrationRepository registrationRepository,
+            EventMetadataService eventMetadataService,
+            RegistrationView registrationView) {
+        this.eventRepository = eventRepository;
+        this.registrationRepository = registrationRepository;
+        this.eventMetadataService = eventMetadataService;
+        this.registrationView = registrationView;
+    }
 
     public List<Event> getAllEvents() {
         return eventRepository.findAll();
@@ -40,13 +44,13 @@ public class EventService {
     }
 
     public Event createEvent(Event event) {
-        normalizeEvent(event);
+        eventMetadataService.normalize(event);
         return eventRepository.save(event);
     }
 
     public Event updateEvent(Long id, Event eventDetails) {
         Event existing = eventRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Event not found"));
+            .orElseThrow(() -> new RuntimeException("Event not found"));
 
         existing.setTitle(eventDetails.getTitle());
         existing.setDescription(eventDetails.getDescription());
@@ -59,7 +63,7 @@ public class EventService {
         existing.setImageUrl(eventDetails.getImageUrl());
         existing.setOrganizerName(eventDetails.getOrganizerName());
 
-        normalizeEvent(existing);
+        eventMetadataService.normalize(existing);
         return eventRepository.save(existing);
     }
 
@@ -68,8 +72,7 @@ public class EventService {
         boolean updated = false;
 
         for (Event event : events) {
-            boolean eventUpdated = normalizeEvent(event);
-            updated = updated || eventUpdated;
+            updated = eventMetadataService.normalize(event) || updated;
         }
 
         if (updated) {
@@ -77,10 +80,7 @@ public class EventService {
         }
     }
 
-    // ── REGISTRATIONS ─────────────────────────────────────
-
     public Registration registerForEvent(Long userId, Long eventId) {
-        // Check if already registered
         if (registrationRepository.existsByUserIdAndEventId(userId, eventId)) {
             throw new RuntimeException("Already registered for this event");
         }
@@ -96,64 +96,18 @@ public class EventService {
     }
 
     public List<Registration> getRegistrationsByEvent(Long eventId) {
-        // Fetch registrations and enrich with student info
-        List<Registration> regs = registrationRepository.findByEventId(eventId);
-        for (Registration reg : regs) {
-            userRepository.findById(reg.getUserId()).ifPresent(user -> {
-                reg.setStudentName(user.getFullName());
-                reg.setStudentEmail(user.getEmail());
-            });
-        }
-        return regs;
+        return registrationView.build(registrationRepository.findByEventId(eventId));
     }
 
     public boolean isRegistered(Long userId, Long eventId) {
         return registrationRepository.existsByUserIdAndEventId(userId, eventId);
     }
 
-    // ── CANCEL REGISTRATION (Only ONE method!) ───────────
     @Transactional
     public void cancelRegistration(Long userId, Long eventId) {
         if (!registrationRepository.existsByUserIdAndEventId(userId, eventId)) {
             throw new RuntimeException("Registration not found");
         }
         registrationRepository.deleteByUserIdAndEventId(userId, eventId);
-    }
-
-    private boolean normalizeEvent(Event event) {
-        boolean updated = false;
-
-        if (event.getCategory() == null || event.getCategory().isBlank()) {
-            event.setCategory(inferCategory(event.getTitle()));
-            updated = true;
-        }
-
-        if (event.getDepartment() == null || event.getDepartment().isBlank()) {
-            event.setDepartment("All Colleges");
-            updated = true;
-        }
-
-        return updated;
-    }
-
-    private String inferCategory(String title) {
-        String safeTitle = title == null ? "" : title;
-
-        if (safeTitle.matches("(?i).*(tech|hack|science|code|program|robot|innovation|digital|ict).*")) {
-            return "technology";
-        }
-        if (safeTitle.matches("(?i).*(academic|research|seminar|workshop|quiz|forum|lecture).*")) {
-            return "academic";
-        }
-        if (safeTitle.matches("(?i).*(cultur|music|art|festival|dance|perform).*")) {
-            return "cultural";
-        }
-        if (safeTitle.matches("(?i).*(career|fair|job|summit|entrepreneur|business).*")) {
-            return "career";
-        }
-        if (safeTitle.matches("(?i).*(sport|game|tournament|athletic).*")) {
-            return "sports";
-        }
-        return "social";
     }
 }
