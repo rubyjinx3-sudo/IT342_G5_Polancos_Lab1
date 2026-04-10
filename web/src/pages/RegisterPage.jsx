@@ -5,6 +5,11 @@ import { APP_NAME } from '../config/appConfig';
 import logo from '../assets/campus-logo.svg';
 import './RegisterPage.css';
 
+const ROLE_OPTIONS = [
+  { value: 'STUDENT', label: 'Student' },
+  { value: 'ORGANIZER', label: 'Organizer' },
+];
+
 const AlertCircle = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -75,8 +80,8 @@ export const RegisterPage = () => {
 
     setLoading(true);
     try {
-      await register(formData);
-      navigate('/dashboard');
+      const response = await register(formData);
+      navigate(response.user?.role?.toUpperCase() === 'ORGANIZER' ? '/organizer' : '/dashboard');
     } catch (err) {
       setError(err.response?.data || err.message || 'Failed to register. Please try again.');
     } finally {
@@ -130,6 +135,22 @@ export const RegisterPage = () => {
                 required
                 disabled={loading}
               />
+            </div>
+
+            <div className="form-group">
+              <label htmlFor="role" className="form-label">Account Type</label>
+              <select
+                id="role"
+                name="role"
+                className="form-input form-select"
+                value={formData.role}
+                onChange={handleChange}
+                disabled={loading}
+              >
+                {ROLE_OPTIONS.map((role) => (
+                  <option key={role.value} value={role.value}>{role.label}</option>
+                ))}
+              </select>
             </div>
 
             <div className="form-group">

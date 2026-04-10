@@ -2,9 +2,12 @@ package com.lab2.authsystem.service;
 
 import com.lab2.authsystem.model.Event;
 import com.lab2.authsystem.model.Registration;
+import com.lab2.authsystem.model.User;
 import com.lab2.authsystem.repository.EventRepository;
 import com.lab2.authsystem.repository.RegistrationRepository;
+import com.lab2.authsystem.repository.UserRepository;
 import com.lab2.authsystem.service.event.EventMetadataService;
+import com.lab2.authsystem.service.event.EventValidationService;
 import com.lab2.authsystem.service.event.RegistrationView;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,17 +20,23 @@ public class EventService {
 
     private final EventRepository eventRepository;
     private final RegistrationRepository registrationRepository;
+    private final UserRepository userRepository;
     private final EventMetadataService eventMetadataService;
+    private final EventValidationService eventValidationService;
     private final RegistrationView registrationView;
 
     public EventService(
             EventRepository eventRepository,
             RegistrationRepository registrationRepository,
+            UserRepository userRepository,
             EventMetadataService eventMetadataService,
+            EventValidationService eventValidationService,
             RegistrationView registrationView) {
         this.eventRepository = eventRepository;
         this.registrationRepository = registrationRepository;
+        this.userRepository = userRepository;
         this.eventMetadataService = eventMetadataService;
+        this.eventValidationService = eventValidationService;
         this.registrationView = registrationView;
     }
 
@@ -44,6 +53,7 @@ public class EventService {
     }
 
     public Event createEvent(Event event) {
+        eventValidationService.validateForSave(event);
         eventMetadataService.normalize(event);
         return eventRepository.save(event);
     }
@@ -63,6 +73,7 @@ public class EventService {
         existing.setImageUrl(eventDetails.getImageUrl());
         existing.setOrganizerName(eventDetails.getOrganizerName());
 
+        eventValidationService.validateForSave(existing);
         eventMetadataService.normalize(existing);
         return eventRepository.save(existing);
     }
@@ -81,6 +92,18 @@ public class EventService {
     }
 
     public Registration registerForEvent(Long userId, Long eventId) {
+        User user = userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        Event event = eventRepository.findById(eventId)
+            .orElseThrow(() -> new RuntimeException("Event not found"));
+
+        if (user.getRole() != User.Role.STUDENT) {
+            throw new IllegalArgumentException("Only students can register for events");
+        }
+
+        eventValidationService.validateSchedule(event.getDate(), event.getTime(), event.getEndTime());
+
         if (registrationRepository.existsByUserIdAndEventId(userId, eventId)) {
             throw new RuntimeException("Already registered for this event");
         }
@@ -105,9 +128,16 @@ public class EventService {
 
     @Transactional
     public void cancelRegistration(Long userId, Long eventId) {
+        userRepository.findById(userId)
+            .orElseThrow(() -> new RuntimeException("User not found"));
+
+        eventRepository.findById(eventId)
+            .orElseThrow(() -> new RuntimeException("Event not found"));
+
         if (!registrationRepository.existsByUserIdAndEventId(userId, eventId)) {
             throw new RuntimeException("Registration not found");
         }
+
         registrationRepository.deleteByUserIdAndEventId(userId, eventId);
     }
 }

@@ -1,6 +1,9 @@
 package com.lab2.authsystem.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.LocalDateTime;
@@ -13,21 +16,28 @@ public class Event {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @NotBlank(message = "Event title is required")
+    @Size(max = 120, message = "Event title must not exceed 120 characters")
     @Column(nullable = false)
     private String title;
 
+    @Size(max = 2000, message = "Description must not exceed 2000 characters")
     @Column(columnDefinition = "TEXT")
     private String description;
 
+    @NotNull(message = "Event date is required")
     @Column(nullable = false)
     private LocalDate date;
 
+    @NotNull(message = "Start time is required")
     @Column(nullable = false)
     private LocalTime time;
 
     @Column(name = "end_time")
     private LocalTime endTime;
 
+    @NotBlank(message = "Event location is required")
+    @Size(max = 150, message = "Location must not exceed 150 characters")
     @Column(nullable = false)
     private String location;
 
@@ -40,6 +50,7 @@ public class Event {
     @Column(name = "image_url", columnDefinition = "TEXT")
     private String imageUrl;
 
+    @NotNull(message = "Organizer ID is required")
     @Column(name = "organizer_id", nullable = false)
     private Long organizerId;
 

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../context/AuthContext';
 import eventService from '../services/eventService';
 import { uploadEventImage } from '../services/supabaseStorage';
@@ -97,11 +97,9 @@ const OrganizerPage = () => {
   const [imagePreview, setImagePreview] = useState('');
   const [creating, setCreating] = useState(false);
 
-  useEffect(() => {
-    if (user) loadMyEvents();
-  }, [user]);
+  const loadMyEvents = useCallback(async () => {
+    if (!user) return;
 
-  const loadMyEvents = async () => {
     try {
       setLoading(true);
       const evs = await eventService.getEventsByOrganizer(user.userId);
@@ -111,7 +109,11 @@ const OrganizerPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [user]);
+
+  useEffect(() => {
+    loadMyEvents();
+  }, [loadMyEvents]);
 
   const resetForm = () => {
     setForm(createInitialForm());
@@ -124,6 +126,12 @@ const OrganizerPage = () => {
   const handleSaveEvent = async (e) => {
     e.preventDefault();
     setMsg(null);
+
+    if (form.endTime && form.time && form.endTime <= form.time) {
+      setMsg({ type: 'error', text: 'End time must be later than the start time.' });
+      return;
+    }
+
     setCreating(true);
     try {
       let imageUrl = existingImageUrl;

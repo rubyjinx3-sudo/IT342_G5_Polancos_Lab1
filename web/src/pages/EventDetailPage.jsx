@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import eventService from '../services/eventService';
@@ -8,10 +8,10 @@ import './EventDetailPage.css';
 const CATEGORY_COLORS = {
   academic: { bg: '#EEF2FF', color: '#4F46E5' },
   cultural: { bg: '#FDF2F8', color: '#BE185D' },
-  career:   { bg: '#ECFDF5', color: '#059669' },
+  career: { bg: '#ECFDF5', color: '#059669' },
   technology: { bg: '#ECFEFF', color: '#0F766E' },
-  social:   { bg: '#FFF7ED', color: '#EA580C' },
-  sports:   { bg: '#F0FDF4', color: '#16A34A' },
+  social: { bg: '#FFF7ED', color: '#EA580C' },
+  sports: { bg: '#F0FDF4', color: '#16A34A' },
 };
 
 function formatDate(d) {
@@ -30,11 +30,7 @@ const EventDetailPage = () => {
   const [registering, setRegistering] = useState(false);
   const [regError, setRegError] = useState('');
 
-  useEffect(() => {
-    load();
-  }, [eventId]);
-
-  const load = async () => {
+  const load = useCallback(async () => {
     try {
       setLoading(true);
       const [ev, registered] = await Promise.all([
@@ -48,62 +44,77 @@ const EventDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [eventId, user]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const handleRegister = async () => {
-  if (!user) { navigate('/'); return; }
-  setRegError('');
-  setRegistering(true);
-  try {
-    await eventService.registerForEvent(eventId);
-    navigate('/dashboard', {
-      replace: true,
-      state: {
-        successMessage: `Successfully registered for the ${event?.title || 'selected'} event.`,
-      },
-    });
-  } catch (err) {
-    const msg = err.response?.data?.message 
-      || err.response?.data 
-      || err.message 
-      || 'Registration failed.';
-    setRegError(typeof msg === 'object' ? JSON.stringify(msg) : msg);
-  } finally {
-    setRegistering(false);
+    if (!user) {
+      navigate('/');
+      return;
+    }
+
+    setRegError('');
+    setRegistering(true);
+
+    try {
+      await eventService.registerForEvent(eventId);
+      navigate('/dashboard', {
+        replace: true,
+        state: {
+          successMessage: `Successfully registered for the ${event?.title || 'selected'} event.`,
+        },
+      });
+    } catch (err) {
+      const msg = err.response?.data?.message
+        || err.response?.data
+        || err.message
+        || 'Registration failed.';
+      setRegError(typeof msg === 'object' ? JSON.stringify(msg) : msg);
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    if (!user) return;
+
+    setRegError('');
+    setRegistering(true);
+
+    try {
+      await eventService.cancelRegistration(eventId);
+      setIsRegistered(false);
+    } catch (err) {
+      const msg = err.response?.data?.message
+        || err.response?.data
+        || err.message
+        || 'Cancellation failed.';
+      setRegError(typeof msg === 'object' ? JSON.stringify(msg) : msg);
+    } finally {
+      setRegistering(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="page-loading">
+        <div className="spinner" />
+        <p>Loading event...</p>
+      </div>
+    );
   }
-};
 
-const handleCancel = async () => {
-  if (!user) return;
-  setRegError('');
-  setRegistering(true);
-  try {
-    await eventService.cancelRegistration(eventId);
-    setIsRegistered(false);
-  } catch (err) {
-    const msg = err.response?.data?.message 
-      || err.response?.data 
-      || err.message 
-      || 'Cancellation failed.';
-    setRegError(typeof msg === 'object' ? JSON.stringify(msg) : msg);
-  } finally {
-    setRegistering(false);
+  if (!event) {
+    return (
+      <div className="not-found">
+        <h2>Event not found</h2>
+        <button className="back-btn" onClick={() => navigate(-1)}>Go Back</button>
+      </div>
+    );
   }
-};
-
-  if (loading) return (
-    <div className="page-loading">
-      <div className="spinner" />
-      <p>Loading event...</p>
-    </div>
-  );
-
-  if (!event) return (
-    <div className="not-found">
-      <h2>Event not found</h2>
-      <button className="back-btn" onClick={() => navigate(-1)}>← Go Back</button>
-    </div>
-  );
 
   const catStyle = CATEGORY_COLORS[event.category] || CATEGORY_COLORS.social;
 
@@ -137,7 +148,7 @@ const handleCancel = async () => {
               <Clock size={16} className="meta-icon" />
               <span>
                 {event.timeFormatted || event.time}
-                {event.endTimeFormatted ? ` – ${event.endTimeFormatted}` : ''}
+                {event.endTimeFormatted ? ` - ${event.endTimeFormatted}` : ''}
               </span>
             </div>
             <div className="meta-item">
@@ -164,37 +175,36 @@ const handleCancel = async () => {
             </div>
           )}
 
-          {/* Register / Already registered */}
-{/* Register / Cancel */}
-<div className="detail-action">
-  {regError && (
-    <div className="reg-error">
-      <AlertCircle size={15} />
-      <span>{typeof regError === 'object' ? regError.message || 'An error occurred.' : regError}</span>
-    </div>
-  )}
-  {isRegistered ? (
-    <div className="registered-box">
-      <CheckCircle size={20} className="check-icon" />
-      <span>You're registered for this event!</span>
-      <button
-        className="cancel-btn"
-        onClick={handleCancel}
-        disabled={registering}
-      >
-        {registering ? 'Cancelling...' : 'Cancel Registration'}
-      </button>
-    </div>
-  ) : (
-    <button
-      className="register-btn"
-      onClick={handleRegister}
-      disabled={registering}
-    >
-      {registering ? 'Registering...' : 'Register for Event'}
-    </button>
-  )}
-</div>
+          <div className="detail-action">
+            {regError && (
+              <div className="reg-error">
+                <AlertCircle size={15} />
+                <span>{typeof regError === 'object' ? regError.message || 'An error occurred.' : regError}</span>
+              </div>
+            )}
+
+            {isRegistered ? (
+              <div className="registered-box">
+                <CheckCircle size={20} className="check-icon" />
+                <span>You're registered for this event!</span>
+                <button
+                  className="cancel-btn"
+                  onClick={handleCancel}
+                  disabled={registering}
+                >
+                  {registering ? 'Cancelling...' : 'Cancel Registration'}
+                </button>
+              </div>
+            ) : (
+              <button
+                className="register-btn"
+                onClick={handleRegister}
+                disabled={registering}
+              >
+                {registering ? 'Registering...' : 'Register for Event'}
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>
