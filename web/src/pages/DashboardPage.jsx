@@ -191,7 +191,7 @@ const DashboardPage = () => {
               type="search"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by event, location, or organizer"
+              placeholder="Search by event, location, or department"
             />
           </div>
           <div className="filter-field">

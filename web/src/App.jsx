@@ -67,13 +67,15 @@ export default function App() {
           />
 
           <Route
-            path="/organizer"
+            path="/admin"
             element={(
-              <ProtectedRoute requiredRole="organizer">
+              <ProtectedRoute requiredRole="admin">
                 <WithNav><OrganizerPage /></WithNav>
               </ProtectedRoute>
             )}
           />
+
+          <Route path="/organizer" element={<Navigate to="/admin" replace />} />
 
           <Route
             path="/profile"

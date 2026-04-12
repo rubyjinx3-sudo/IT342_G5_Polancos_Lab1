@@ -117,6 +117,7 @@ const EventDetailPage = () => {
   }
 
   const catStyle = CATEGORY_COLORS[event.category] || CATEGORY_COLORS.social;
+  const isStudent = user?.role?.toLowerCase() === 'student';
 
   return (
     <div className="event-detail-page">
@@ -157,13 +158,8 @@ const EventDetailPage = () => {
             </div>
             {event.department && (
               <div className="meta-item">
-                <span>{event.department}</span>
-              </div>
-            )}
-            {event.organizerName && (
-              <div className="meta-item">
                 <User size={16} className="meta-icon" />
-                <span>Organized by {event.organizerName}</span>
+                <span>Organized by {event.department}</span>
               </div>
             )}
           </div>
@@ -183,7 +179,11 @@ const EventDetailPage = () => {
               </div>
             )}
 
-            {isRegistered ? (
+            {!isStudent ? (
+              <div className="registered-box">
+                <span>Admin accounts manage events instead of registering for them.</span>
+              </div>
+            ) : isRegistered ? (
               <div className="registered-box">
                 <CheckCircle size={20} className="check-icon" />
                 <span>You're registered for this event!</span>

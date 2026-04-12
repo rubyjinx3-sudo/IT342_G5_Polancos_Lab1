@@ -146,7 +146,7 @@ const OrganizerPage = () => {
         ...form,
         imageUrl,
         organizerId: user.userId,
-        organizerName: user.name || user.fullName,
+        organizerName: form.department,
       };
 
       if (editingEventId) {
@@ -229,8 +229,8 @@ const OrganizerPage = () => {
     <div className="organizer-page">
       <div className="organizer-header">
         <div>
-          <h2 className="organizer-title">My Events</h2>
-          <p className="organizer-subtitle">Manage events you've created</p>
+          <h2 className="organizer-title">Admin Events</h2>
+          <p className="organizer-subtitle">Manage events for all departments</p>
         </div>
         <button className="create-btn" onClick={() => { resetForm(); setShowForm(true); setMsg(null); }}>
           <Plus size={16} /> Create Event

@@ -32,7 +32,7 @@ const authService = {
       fullName: userData.fullName,
       email: userData.email,
       password: userData.password,
-      role: (userData.role || 'student').toUpperCase(),
+      role: 'STUDENT',
     });
     const data = res.data;
 

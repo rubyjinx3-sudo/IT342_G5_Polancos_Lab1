@@ -125,7 +125,6 @@ const eventService = {
         !search ||
         e.title?.toLowerCase().includes(search.toLowerCase()) ||
         e.location?.toLowerCase().includes(search.toLowerCase()) ||
-        e.organizerName?.toLowerCase().includes(search.toLowerCase()) ||
         e.department?.toLowerCase().includes(search.toLowerCase());
 
       const matchCategory = category === 'all' || e.category === category;

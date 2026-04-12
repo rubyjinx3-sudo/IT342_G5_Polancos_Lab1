@@ -48,7 +48,8 @@ const LoginPage = () => {
     setLoading(true);
     try {
       const { user } = await login(email, password);
-      navigate(user.role?.toUpperCase() === 'ORGANIZER' ? '/organizer' : '/dashboard');
+      const role = user.role?.toUpperCase();
+      navigate(role === 'ADMIN' || role === 'ORGANIZER' ? '/admin' : '/dashboard');
     } catch (err) {
       setError(err.response?.data || err.message || 'Invalid email or password.');
     } finally {

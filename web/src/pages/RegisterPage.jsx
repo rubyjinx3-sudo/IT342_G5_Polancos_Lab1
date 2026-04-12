@@ -5,11 +5,6 @@ import { APP_NAME } from '../config/appConfig';
 import logo from '../assets/campus-logo.svg';
 import './RegisterPage.css';
 
-const ROLE_OPTIONS = [
-  { value: 'STUDENT', label: 'Student' },
-  { value: 'ORGANIZER', label: 'Organizer' },
-];
-
 const AlertCircle = () => (
   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
     fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
@@ -80,8 +75,8 @@ export const RegisterPage = () => {
 
     setLoading(true);
     try {
-      const response = await register(formData);
-      navigate(response.user?.role?.toUpperCase() === 'ORGANIZER' ? '/organizer' : '/dashboard');
+      await register({ ...formData, role: 'STUDENT' });
+      navigate('/dashboard');
     } catch (err) {
       setError(err.response?.data || err.message || 'Failed to register. Please try again.');
     } finally {
@@ -92,13 +87,13 @@ export const RegisterPage = () => {
   return (
     <div className="register-container">
       <div className="register-showcase">
-        <div className="register-pill">New account</div>
+        <div className="register-pill">Student account</div>
         <div className="register-brand-block">
           <img src={logo} alt={`${APP_NAME} logo`} className="register-logo-image" />
           <div>
             <h2 className="register-showcase-title">{APP_NAME}</h2>
             <p className="register-showcase-copy">
-              Join the campus event platform with a cleaner onboarding flow and a branded first impression.
+              Join the campus event platform to discover activities, register faster, and keep your schedule in one place.
             </p>
           </div>
         </div>
@@ -135,22 +130,6 @@ export const RegisterPage = () => {
                 required
                 disabled={loading}
               />
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="role" className="form-label">Account Type</label>
-              <select
-                id="role"
-                name="role"
-                className="form-input form-select"
-                value={formData.role}
-                onChange={handleChange}
-                disabled={loading}
-              >
-                {ROLE_OPTIONS.map((role) => (
-                  <option key={role.value} value={role.value}>{role.label}</option>
-                ))}
-              </select>
             </div>
 
             <div className="form-group">
@@ -221,45 +200,43 @@ export const RegisterPage = () => {
             </div>
           </div>
 
-          {formData.role === 'STUDENT' && (
-            <div className="register-grid">
-              <div className="form-group">
-                <label htmlFor="department" className="form-label">
-                  Department <span className="optional">(Optional)</span>
-                </label>
-                <input
-                  id="department"
-                  name="department"
-                  type="text"
-                  className="form-input"
-                  placeholder="e.g., Computer Science"
-                  value={formData.department}
-                  onChange={handleChange}
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="year" className="form-label">
-                  Year <span className="optional">(Optional)</span>
-                </label>
-                <select
-                  id="year"
-                  className="form-input form-select"
-                  value={formData.year}
-                  onChange={handleYearChange}
-                  disabled={loading}
-                >
-                  <option value="">Select year</option>
-                  <option value="freshman">Freshman</option>
-                  <option value="sophomore">Sophomore</option>
-                  <option value="junior">Junior</option>
-                  <option value="senior">Senior</option>
-                  <option value="graduate">Graduate</option>
-                </select>
-              </div>
+          <div className="register-grid">
+            <div className="form-group">
+              <label htmlFor="department" className="form-label">
+                Department <span className="optional">(Optional)</span>
+              </label>
+              <input
+                id="department"
+                name="department"
+                type="text"
+                className="form-input"
+                placeholder="e.g., Computer Science"
+                value={formData.department}
+                onChange={handleChange}
+                disabled={loading}
+              />
             </div>
-          )}
+
+            <div className="form-group">
+              <label htmlFor="year" className="form-label">
+                Year <span className="optional">(Optional)</span>
+              </label>
+              <select
+                id="year"
+                className="form-input form-select"
+                value={formData.year}
+                onChange={handleYearChange}
+                disabled={loading}
+              >
+                <option value="">Select year</option>
+                <option value="freshman">Freshman</option>
+                <option value="sophomore">Sophomore</option>
+                <option value="junior">Junior</option>
+                <option value="senior">Senior</option>
+                <option value="graduate">Graduate</option>
+              </select>
+            </div>
+          </div>
 
           <button type="submit" className="register-button" disabled={loading}>
             {loading ? 'Creating Account...' : 'Create Account'}

@@ -120,6 +120,7 @@ const ProfilePage = () => {
   }
 
   const displayRole = profile?.role || user?.role || 'student';
+  const displayRoleLabel = ['admin', 'organizer'].includes(displayRole.toLowerCase()) ? 'Admin' : 'Student';
   const displayName = fullName || user?.name || '';
   const displayAvatar = avatarPreview || avatarUrl || user?.avatarUrl || user?.avatarDataUrl || '';
 
@@ -154,7 +155,7 @@ const ProfilePage = () => {
             <h3 className="profile-name">{displayName}</h3>
             <p className="profile-email">{user?.email}</p>
             <span className="role-badge">
-              {displayRole.charAt(0).toUpperCase() + displayRole.slice(1).toLowerCase()}
+              {displayRoleLabel}
             </span>
           </div>
 
@@ -171,7 +172,7 @@ const ProfilePage = () => {
               <div className="stat-row">
                 <Shield size={16} className="stat-icon" />
                 <div>
-                  <p className="stat-val">{displayRole.charAt(0).toUpperCase() + displayRole.slice(1).toLowerCase()}</p>
+                  <p className="stat-val">{displayRoleLabel}</p>
                   <p className="stat-lbl">Account Type</p>
                 </div>
               </div>
