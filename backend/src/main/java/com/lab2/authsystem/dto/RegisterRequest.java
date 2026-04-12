@@ -18,7 +18,7 @@ public class RegisterRequest {
     @Size(min = 6, message = "Password must be at least 6 characters")
     private String password;
 
-    // STUDENT or ORGANIZER
+    // Public registration is always STUDENT. This field is ignored server-side.
     private String role = "STUDENT";
 
     public RegisterRequest() {}

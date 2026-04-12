@@ -17,7 +17,7 @@ public class User {
     @Column(unique = true, nullable = false)
     private String email;
 
-    // STUDENT or ORGANIZER
+    // Public registration creates STUDENT accounts. ADMIN is for the campus event manager.
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private Role role = Role.STUDENT;
@@ -35,7 +35,7 @@ public class User {
     private LocalDateTime lastLogin;
 
     public enum Role {
-        STUDENT, ORGANIZER
+        STUDENT, ADMIN, ORGANIZER
     }
 
     @PrePersist

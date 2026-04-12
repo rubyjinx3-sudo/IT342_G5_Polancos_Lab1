@@ -19,19 +19,7 @@ public class UserFactory {
         user.setFullName(request.getFullName());
         user.setEmail(request.getEmail());
         user.setPassword(passwordEncoder.encode(request.getPassword()));
-        user.setRole(resolveRole(request.getRole()));
+        user.setRole(User.Role.STUDENT);
         return user;
-    }
-
-    private User.Role resolveRole(String rawRole) {
-        if (rawRole == null || rawRole.isBlank()) {
-            return User.Role.STUDENT;
-        }
-
-        try {
-            return User.Role.valueOf(rawRole.trim().toUpperCase());
-        } catch (IllegalArgumentException ex) {
-            return User.Role.STUDENT;
-        }
     }
 }
