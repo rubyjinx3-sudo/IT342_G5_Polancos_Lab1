@@ -44,7 +44,7 @@ public class EventController {
     public ResponseEntity<?> updateEvent(@PathVariable Long id, @Valid @RequestBody Event event) {
         try {
             return ResponseEntity.ok(eventService.updateEvent(id, event));
-        } catch (RuntimeException | IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -54,7 +54,7 @@ public class EventController {
         try {
             Registration registration = eventService.registerForEvent(body.getUserId(), body.getEventId());
             return ResponseEntity.ok(registration);
-        } catch (RuntimeException | IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
@@ -83,7 +83,7 @@ public class EventController {
         try {
             eventService.cancelRegistration(userId, eventId);
             return ResponseEntity.ok("Registration cancelled");
-        } catch (RuntimeException | IllegalArgumentException e) {
+        } catch (RuntimeException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }

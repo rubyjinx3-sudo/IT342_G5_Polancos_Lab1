@@ -31,3 +31,7 @@ build/
 
 ### VS Code ###
 .vscode/
+
+backend/data/
+backend/.m2/
+*.log
